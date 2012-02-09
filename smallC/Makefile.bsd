@@ -1,0 +1,61 @@
+#       I couldn't get the supplied makefile to work, so I wrote one for
+#       BSD systems      - John Nelson, moderator, mod.sources
+#
+#       You'll probabably want to change these.  These are used by the
+compilers#       to figure out where the include files should go.
+TARGDIR = /u/clewis/lib
+INCDIR = "/u/clewis/src/scc/include/"
+
+INSTFLAGS = -DINCDIR=$(INCDIR)
+CFLAGS = '$(INSTFLAGS)' -O
+AR = ar
+ARFLAGS = rv
+
+LIB = scclib.a
+
+FE =    data.o \
+        error.o \
+        expr.o \
+        function.o \
+        gen.o \
+        io.o \
+        lex.o \
+        main.o \
+        preproc.o \
+        primary.o \
+        stmt.o \
+        sym.o \
+        while.o
+
+all:    scc8080 sccas09 sccvax sccm68k
+
+$(FE) code8080.o codeas09.o codevax.o codem68k.o: defs.h data.h
+
+install:        all
+        mv sccvax scc8080 sccas09 sccm68k $(TARGDIR)
+
+#Alternately, you may have to do an lorder
+$(LIB): $(FE)
+        -rm $@
+        ar q $@ $(FE)
+        -ranlib $(LIB)
+
+scc8080:        code8080.o $(LIB)
+        $(CC) -o scc8080 $(CFLAGS) $(LIB) code8080.o
+
+sccas09:        codeas09.o $(LIB)
+        $(CC) -o sccas09 $(CFLAGS) $(LIB) codeas09.o
+
+sccvax:         codevax.o $(LIB)
+        $(CC) -o sccvax $(CFLAGS) $(LIB) codevax.o
+
+sccm68k:        codem68k.o $(LIB)
+        $(CC) -o sccm68k $(CFLAGS) $(LIB) codem68k.o
+
+print:
+        pr -n defs.h data.h data.c error.c expr.c function.c gen.c \
+                io.c lex.c main.c preproc.c primary.c stmt.c \
+                sym.c while.c code*.c | lp
+clean:
+        rm -f $(LIB) code8080.o codeas09.o codevax.o codem68k.o \
+                     sccvax scc8080 sccas09 sccm68k
