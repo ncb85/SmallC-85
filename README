@@ -7,7 +7,7 @@ When not initialised global var yields zero at compile time.
 
 Genereted code is suitable for ASXXXX assemler/linker.
 
--------- origial posting
+-------------------------- original posting ------------------------------
 
 Small C version C3.0R1.1
                               (SCC3)
