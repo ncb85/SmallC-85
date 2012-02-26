@@ -8,6 +8,10 @@ Furthermore ANSI style method declaration has been added.
 
 Genereted code is suitable for ASXXXX assemler/linker.
 
+***** update *****
+- support for unsigned types
+- support for undocumented 8085 istructions LHLX, SHLX, LDSI, ARHL
+
 -------------------------- original posting ------------------------------
 
 Small C version C3.0R1.1
