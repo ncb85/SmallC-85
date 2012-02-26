@@ -6,7 +6,7 @@ to handle Windows EOLs. Initialisation of global variables is also possible.
 When not initialised global var is assigned zero at compile time.
 Furthermore ANSI style method declaration has been added.
 
-Genereted code is suitable for ASXXXX assemler/linker.
+Genereted code is suitable for ASXXXX assembler/linker.
 
 ***** update *****
 - support for unsigned types
