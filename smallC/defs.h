@@ -1,22 +1,25 @@
-/*      File defs.h: 2.1 (83/03/21,02:07:20) */
+/*
+ * File defs.h: 2.1 (83/03/21,02:07:20)
+ */
 
+/* Intel 8080 architecture defs */
+#define INTSIZE 2
+
+/* miscellaneous */
 #define FOREVER for(;;)
 #define FALSE   0
 #define TRUE    1
 #define NO      0
 #define YES     1
 
-/* miscellaneous */
-
 #define EOS     0
-#define EOL     10
+#define LF      10
 #define BKSP    8
 #define CR      13
 #define FFEED   12
 #define TAB     9
 
 /* symbol table parameters */
-
 /*#define SYMSIZ  38
 #define SYMTBSZ 20000
 #define NUMGLBS 450
@@ -26,7 +29,6 @@
 #define ENDLOC  (symtab+SYMTBSZ-SYMSIZ)*/
 
 /* symbol table entry format */
-
 /*#define NAME    0
 #define IDENT   33
 #define TYPE    34
@@ -39,7 +41,7 @@
 #define NAMEMAX         32
 
 typedef struct symbol_table {
-	char name[NAMESIZE];		// symbol name
+	char name[NAMESIZE];	// symbol name
 	int identity;           // variable, array, pointer, function
 	int type;               // char, int
 	int storage;		// public, auto, extern, static, lstatic, defauto
@@ -49,19 +51,23 @@ typedef struct symbol_table {
 #define NUMBER_OF_LOCALS 50
 
 /* possible entries for "ident" */
-
 #define VARIABLE        1
 #define ARRAY           2
 #define POINTER         3
 #define FUNCTION        4
 
-/* possible entries for "type" */
-
-#define CCHAR   1
-#define CINT    2
+/**
+ * possible entries for "type"
+ * high order 14 bits give length of object
+ * low order 2 bits make type unique within length
+ */
+#define UNSIGNED        1
+#define CCHAR           (1 << 2)
+#define UCHAR           ((1 << 2) + 1)
+#define CINT            (2 << 2)
+#define UINT            ((2 << 2) + 1)
 
 /* possible entries for storage */
-
 #define PUBLIC  1
 #define AUTO    2
 #define EXTERN  3
@@ -71,13 +77,11 @@ typedef struct symbol_table {
 #define DEFAUTO 6
 
 /* "do"/"for"/"while"/"switch" statement stack */
-
 #define WSTABSZ 100
 //#define WSSIZ   7
 //#define WSMAX   ws+WSTABSZ-WSSIZ
 
 /* entry offsets in "do"/"for"/"while"/"switch" stack */
-
 #define WSSYM   0
 #define WSSP    1
 #define WSTYP   2
@@ -100,38 +104,31 @@ typedef struct while_table {
 } while_table_t;
 
 /* possible entries for "wstyp" */
-
 #define WSWHILE 0
 #define WSFOR   1
 #define WSDO    2
 #define WSSWITCH        3
 
 /* "switch" label stack */
-
 #define SWSTSZ  100
 
 /* literal pool */
-
 #define LITABSZ 2000
 #define LITMAX  LITABSZ-1
 
 /* input line */
-
 #define LINESIZE        150
 #define LINEMAX (LINESIZE-1)
 #define MPMAX   LINEMAX
 
 /* macro (define) pool */
-
 #define MACQSIZE        5000
 #define MACMAX  (MACQSIZE-1)
 
 /* "include" stack */
-
 #define INCLSIZ 3
 
 /* statement types (tokens) */
-
 #define STIF    1
 #define STWHILE 2
 #define STRETURN        3
@@ -144,6 +141,9 @@ typedef struct while_table {
 #define STSWITCH        10
 
 #define DEFLIB  inclib()
+
+#define HL_REG 1
+#define DE_REG 2
 
 typedef struct lvalue {
 	symbol_table_t *symbol;		// symbol table address, or 0 for constant
@@ -200,12 +200,6 @@ while_table_t *findwhile();
 while_table_t *readswitch();
 
 /**
- * asm - fetch the address of the specified symbol into the primary register
- * @param sym the symbol name
- */
-void get_location (symbol_table_t *symbol_table_idx);
-
-/**
  * Output the variable symbol at scptr as an extrn or a public
  * @param scptr
  */
@@ -221,19 +215,27 @@ void fpubext(symbol_table_t *scptr);
  * fetch a static memory cell into the primary register
  * @param sym
  */
-void get_memory (symbol_table_t *sym);
+void gen_get_memory (symbol_table_t *sym);
+
+/**
+ * fetch the specified object type indirect through the primary
+ * register into the primary register
+ * @param typeobj object type
+ */
+void gen_get_indirect(char typeobj, int reg);
 
 /**
  * asm - fetch the address of the specified symbol into the primary register
  * @param sym the symbol name
  */
-void get_location (symbol_table_t *sym);
+int gen_get_location (symbol_table_t *sym);
 
 /**
  * asm - store the primary register into the specified static memory cell
  * @param sym
  */
-void putmem (symbol_table_t *sym);
+void gen_put_memory (symbol_table_t *sym);
+
 // intialisation of global variables
 #define INIT_TYPE    NAMESIZE
 #define INIT_LENGTH  NAMESIZE+1
@@ -279,3 +281,8 @@ int get_size(char *symbol_name);
  * @return
  */
 int get_item_at(char *symbol_name, int position);
+
+/**
+ * push the primary register onto the stack
+ */
+//void gen_push();

@@ -58,14 +58,15 @@ int find_symbol(char *symbol_name) {
  * @param value
  */
 void add_data(char *symbol_name, int type, int value) {
+    int length, index;
     if (find_symbol(symbol_name) == 0) {
         add_symbol(symbol_name, type);
     }
     if (initials_table_ptr[INIT_TYPE] != type) {
         error("initialiser type mismatch");
     }
-    int length = ((unsigned char)initials_table_ptr[INIT_LENGTH] << 8) + (unsigned char)initials_table_ptr[INIT_LENGTH+1];
-    int index  = NAMESIZE + 1 + 2 + (2 * length);
+    length = ((unsigned char)initials_table_ptr[INIT_LENGTH] << 8) + (unsigned char)initials_table_ptr[INIT_LENGTH+1];
+    index  = NAMESIZE + 1 + 2 + (2 * length);
     initials_table_ptr[index] = (0xff00 & value) >> 8;
     initials_table_ptr[index + 1] = 0xff & value;
     length++;

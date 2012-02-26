@@ -6,13 +6,11 @@
 #       to figure out where the include files should go.
 #	INCDIR will be the look up location for #include <stdio.h> ..
 TARGDIR = /home/notebook/Public/work/smallCextended/lib
-INCDIR = "/usr/shared/smallC/src/scc/include/"
-
-#CC = mingw32-gcc -D_WIN32 -DMINGW -D_WIN32_WINNT=0x0610 -DUNICODE -std=gnu99
-#-DDONT_INCLUDE_QUICKTIME -Dmain=wingwmain -mwindows -O2
+#INCDIR = "/usr/shared/smallC/src/scc/include/"
+INCDIR = "./includes/"
 
 INSTFLAGS = -DINCDIR=$(INCDIR)
-   CFLAGS = '$(INSTFLAGS)' -O -ggdb
+   CFLAGS = '$(INSTFLAGS)' -O -ggdb -g
 
 ifdef SystemRoot
    # windows
@@ -28,9 +26,6 @@ SRC = initialise.c data.c error.c expr.c function.c gen.c io.c lex.c main.c prep
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 
 all:    scc8080
-
-install:        all
-	mv sccvax scc8080 sccas09 sccm68k $(TARGDIR)
 
 scc8080: $(OBJ)
 	$(CC) -o scc8080 $(CFLAGS) $(OBJ)

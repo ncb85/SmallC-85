@@ -56,6 +56,7 @@ int     sflag;
 int     cflag;
 int     errs;
 int     aflag;
+int     uflag;
 
 char initials_table[INITIALS_SIZE];      // 5kB space for initialisation data
 char *initials_table_ptr = 0;

@@ -1,6 +1,5 @@
-/*      File sym.c: 2.1 (83/03/20,16:02:19) */
-/*% cc -O -c %
- *
+/*
+ * File sym.c: 2.1 (83/03/20,16:02:19)
  */
 
 #include <stdio.h>
@@ -13,7 +12,7 @@
  * @param storage
  * @return 
  */
-declare_global (int type, int storage) {
+declare_global(int type, int storage) {
         int     k, j;
         char    sname[NAMESIZE];
 
@@ -37,14 +36,13 @@ declare_global (int type, int storage) {
                                 //else
                                 //        j = POINTER;
                         }
-                        j = initials(sname, type, j, k); // so far type=size, e.g CCHAR=1, CINT=2
+                        j = initials(sname, type, j, k);
                         add_global (sname, j, type, (k == 0 ? -1 : k), storage);
                         break;
                 }
                 if (!match (","))
                         return;
         }
-
 }
 
 /**
@@ -76,20 +74,19 @@ int     typ, stclass;
                                 k = needsub ();
                                 if (k) {
                                         j = ARRAY;
-                                        if (typ == CINT)
-                                                k = k * intsize();
+                                        if (typ & CINT)
+                                                k = k * INTSIZE;
                                 } else {
                                         j = POINTER;
-                                        k = intsize();
+                                        k = INTSIZE;
                                 }
                         } else
-                                if ((typ == CCHAR) & (j != POINTER))
+                                if ((typ & CCHAR) & (j != POINTER))
                                         k = 1;
                                 else
-                                        k = intsize();
+                                        k = INTSIZE;
                         if (stclass != LSTATIC) {
-                                k = galign(k);
-                                stkp = modstk (stkp - k);
+                                stkp = gen_modify_stack (stkp - k);
                                 add_local (sname, j, typ, stkp, AUTO);
                         } else
                                 add_local( sname, j, typ, k, LSTATIC);
@@ -98,7 +95,6 @@ int     typ, stclass;
                 if (!match (","))
                         return;
         }
-
 }
 
 /**
@@ -110,12 +106,12 @@ int     typ, stclass;
  * @return 1 if variable is initialized
  */
 int initials(char *symbol_name, int size, int identity, int dim) {
-    litptr = 0;
     int dim_unknown = 0;
+    litptr = 0;
     if(dim == 0) { // allow for xx[] = {..}; declaration
         dim_unknown = 1;
     }
-    if ((size != CCHAR) && (size != CINT)) {
+    if (!(size & CCHAR) && !(size & CINT)) {
         error("unsupported storage size");
     }
     if(match("=")) {
@@ -148,14 +144,14 @@ int initials(char *symbol_name, int size, int identity, int dim) {
  * @return
  */
 init(char *symbol_name, int size, int ident, int *dim) {
-    int value;
+    int value, number_of_chars;
     if(ident == POINTER) {
         error("cannot assign to pointer");
     }
     if(quoted_string(&value)) {
         if((ident == VARIABLE) || (size != 1))
             error("found string: must assign to char pointer or array");
-        int number_of_chars = litptr - value;
+        number_of_chars = litptr - value;
         *dim = *dim - number_of_chars;
         while (number_of_chars > 0) {
             add_data(symbol_name, CCHAR, litq[value++]);
@@ -238,6 +234,8 @@ int findloc (char *sname) {
  * @return new index
  */
 int add_global (char *sname, int identity, int type, int offset, int storage) {
+        symbol_table_t *symbol;
+        char *buffer_ptr;
         if (current_symbol_table_idx = findglb (sname)) {
                 return (current_symbol_table_idx);
         }
@@ -246,14 +244,13 @@ int add_global (char *sname, int identity, int type, int offset, int storage) {
                 return (0);
         }
         current_symbol_table_idx = global_table_index;
-        symbol_table_t *symbol = &symbol_table[current_symbol_table_idx];
-        char *buffer_ptr = symbol->name;
-        while (an (*buffer_ptr++ = *sname++));
+        symbol = &symbol_table[current_symbol_table_idx];
+        buffer_ptr = symbol->name;
+        while (alphanumeric(*buffer_ptr++ = *sname++));
         symbol->identity = identity;
         symbol->type = type;
         symbol->storage = storage;
         symbol->offset = offset;        
-        //cptr[OFFSET+1] = (value >> 8) & 0xff;
         global_table_index++;
         return (current_symbol_table_idx);
 }
@@ -269,7 +266,9 @@ int add_global (char *sname, int identity, int type, int offset, int storage) {
  */
 int add_local (char *sname, int identity, int type, int offset, int storage_class) {
         int k;
-
+        symbol_table_t *symbol;
+        char *buffer_ptr;
+        
         if (current_symbol_table_idx = findloc (sname)) {
                 return (current_symbol_table_idx);
         }
@@ -278,9 +277,9 @@ int add_local (char *sname, int identity, int type, int offset, int storage_clas
                 return (0);
         }
         current_symbol_table_idx = local_table_index;
-        symbol_table_t *symbol = &symbol_table[current_symbol_table_idx];
-        char *buffer_ptr = symbol->name;
-        while (an (*buffer_ptr++ = *sname++));
+        symbol = &symbol_table[current_symbol_table_idx];
+        buffer_ptr = symbol->name;
+        while (alphanumeric(*buffer_ptr++ = *sname++));
         symbol->identity = identity;
         symbol->type = type;
         symbol->storage = storage_class;
@@ -288,45 +287,36 @@ int add_local (char *sname, int identity, int type, int offset, int storage_clas
                 data_segment_gdata();
                 print_label(k = getlabel());
                 output_label_terminator();
-                defstorage();
+                gen_def_storage();
                 output_number(offset);
                 newline();
                 code_segment_gtext();
                 offset = k;
-        } else
-                offset = galign(offset);
+        }
         symbol->offset = offset;
-        //cptr[OFFSET+1] = (value >> 8) & 0xff;
         local_table_index++;
         return (current_symbol_table_idx);
-
 }
 
 /*
  *      test if next input string is legal symbol name
  *
  */
-symname (sname)
-char    *sname;
-{
-        int     k;
-        char    c;
+symname(char *sname) {
+    int k;
 
-        blanks ();
-        if (!alpha (ch ()))
-                return (0);
-        k = 0;
-        while (an (ch ()))
-                sname[k++] = gch ();
-        sname[k] = 0;
-        return (1);
-
+    blanks();
+    if (!alpha (ch ()))
+        return (0);
+    k = 0;
+    while (alphanumeric(ch ()))
+        sname[k++] = gch ();
+    sname[k] = 0;
+    return (1);
 }
 
-illname ()
-{
-        error ("illegal symbol name");
-
+illname() {
+    error ("illegal symbol name");
 }
 
 /**
@@ -335,17 +325,10 @@ illname ()
  * @return 
  */
 multidef (char *symbol_name) {
-        error ("already defined");
-        comment ();
-        output_string (symbol_name);
-        newline ();
+    error ("already defined");
+    gen_comment ();
+    output_string (symbol_name);
+    newline ();
 }
 
-glint(char *symbol_entry) {
-        /*int l,u,r;
-        l = symbol_entry[OFFSET];
-        u = symbol_entry[OFFSET+1];
-        r = (l & 0xff) + ((u << 8) & ~0x00ff);
-        return (r);*/
-}
 

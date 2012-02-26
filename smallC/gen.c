@@ -36,7 +36,6 @@ int     label;
 glabel (lab)
 char    *lab;
 {
-        prefix ();
         output_string (lab);
         output_label_terminator ();
         newline ();
@@ -130,17 +129,18 @@ output_decimal (int number) {
  * @return 
  */
 store (lvalue_t *lval) {
-        if (lval->indirect == 0)
-                putmem (lval->symbol);
-        else
-                putstk (lval->indirect);
+    if (lval->indirect == 0)
+        gen_put_memory (lval->symbol);
+    else
+        gen_put_indirect (lval->indirect);
 }
 
-rvalue (lvalue_t *lval) {
-        if ((lval->symbol != 0) & (lval->indirect == 0))
-                get_memory (lval->symbol);
-        else
-                indirect (lval->indirect);
+rvalue (lvalue_t *lval, int reg) {
+    if ((lval->symbol != 0) & (lval->indirect == 0))
+        gen_get_memory (lval->symbol);
+    else
+        gen_get_indirect (lval->indirect, reg);
+    return HL_REG;
 }
 
 /**
@@ -156,6 +156,6 @@ int     label,
         needbrack ("(");
         expression (YES);
         needbrack (")");
-        testjump (label, ft);
+        gen_test_jump (label, ft);
 }
 

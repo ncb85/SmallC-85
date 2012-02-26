@@ -46,6 +46,7 @@ extern  int     sflag;
 extern  int     cflag;
 extern  int     errs;
 extern  int     aflag;
+extern  int     uflag;
 
 extern char initials_table[INITIALS_SIZE];      // 5kB space for initialisation data
 extern char *initials_table_ptr;

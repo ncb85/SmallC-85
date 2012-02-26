@@ -22,10 +22,10 @@ char    ptr[];
 
 doerror(ptr) char *ptr; {
         int k;
-        comment ();
+        gen_comment ();
         output_string (line);
         newline ();
-        comment ();
+        gen_comment ();
         k = 0;
         while (k < lptr) {
                 if (line[k] == 9)
@@ -36,7 +36,7 @@ doerror(ptr) char *ptr; {
         }
         output_byte ('^');
         newline ();
-        comment ();
+        gen_comment ();
         output_string ("******  ");
         output_string (ptr);
         output_string ("  ******");

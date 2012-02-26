@@ -1,6 +1,5 @@
-/*      File primary.c: 2.4 (84/11/27,16:26:07) */
-/*% cc -O -c %
- *
+/*
+ * File primary.c: 2.4 (84/11/27,16:26:07)
  */
 
 #include <stdio.h>
@@ -8,9 +7,9 @@
 #include "data.h"
 
 primary (lvalue_t *lval) {
-        char    /* *ptr, */sname[NAMESIZE];
-        int     num[1];
-        int     k, symbol_table_idx;
+        char    sname[NAMESIZE];
+        int     num[1], k, symbol_table_idx, offset, reg;
+        symbol_table_t *symbol;
 
         debug("primary");
         lval->ptr_type = 0;  /* clear pointer/array type */
@@ -21,19 +20,19 @@ primary (lvalue_t *lval) {
         }
         if (amatch("sizeof", 6)) {
                 needbrack("(");
-                immed();
-                if (amatch("int", 3)) output_number(intsize());
+                gen_immediate();
+                if (amatch("int", 3)) output_number(INTSIZE);
                 else if (amatch("char", 4)) output_number(1);
                 else if (symname(sname)) {
                         if ((symbol_table_idx = findloc(sname)) ||
                                 (symbol_table_idx = findglb(sname))) {
-                                symbol_table_t *symbol = &symbol_table[symbol_table_idx];
+                                symbol = &symbol_table[symbol_table_idx];
                                 if (symbol->storage == LSTATIC)
                                         error("sizeof local static");
-                                int offset = symbol->offset; //glint(ptr);
-                                if ((symbol->type == CINT) ||
+                                offset = symbol->offset;
+                                if ((symbol->type & CINT) ||
                                         (symbol->identity == POINTER))
-                                        offset *= intsize();
+                                        offset *= INTSIZE;
                                 output_number(offset);
                         } else {
                                 error("sizeof undeclared variable");
@@ -50,62 +49,61 @@ primary (lvalue_t *lval) {
         }
         if (symname (sname)) {
                 if (symbol_table_idx = findloc (sname)) {
-                        symbol_table_t *symbol = &symbol_table[symbol_table_idx];
-                        get_location (symbol);
-                        lval->symbol = symbol; //ptr;
+                        symbol = &symbol_table[symbol_table_idx];
+                        reg = gen_get_location (symbol);
+                        lval->symbol = symbol;
                         lval->indirect =  symbol->type;
-                        if (symbol->identity == POINTER) {
-                                lval->indirect = CINT;
-                                lval->ptr_type = symbol->type;
-                        }
                         if (symbol->identity == ARRAY) {
                                 lval->ptr_type = symbol->type;
-                                lval->ptr_type = 0;
-                                return (0);
+                                //lval->ptr_type = 0;
+                                return 0;
                         }
-                        else
-                                return (1);
+                        if (symbol->identity == POINTER) {
+                                lval->indirect = UINT;
+                                lval->ptr_type = symbol->type;
+                        }
+                        return reg;
                 }
                 if (symbol_table_idx = findglb (sname)) {
-                        symbol_table_t *symbol = &symbol_table[symbol_table_idx];
+                        symbol = &symbol_table[symbol_table_idx];
                         if (symbol->identity != FUNCTION) {
                                 lval->symbol = symbol;
                                 lval->indirect = 0;
                                 if (symbol->identity != ARRAY) {
-                                        if (symbol->identity == POINTER)
+                                        if (symbol->identity == POINTER) {
                                                 lval->ptr_type = symbol->type;
-                                        return (1);
+                                        }
+                                        return 1;
                                 }
-                                immed ();
-                                prefix ();
+                                gen_immediate ();
                                 output_string (symbol->name);
                                 newline ();
                                 lval->indirect = lval->ptr_type = symbol_table[symbol_table_idx].type;
                                 lval->ptr_type = 0;
-                                return (0);
+                                return 0;
                         }
                 }
                 blanks ();
                 if (ch() != '(')
                         error("undeclared variable");
                 symbol_table_idx = add_global (sname, FUNCTION, CINT, 0, PUBLIC);
-                symbol_table_t *symbol = &symbol_table[symbol_table_idx];
+                symbol = &symbol_table[symbol_table_idx];
                 lval->symbol = symbol;
                 lval->indirect = 0;
-                return (0);
+                return 0;
         }
         if (constant (num)) {
             lval->symbol = 0;
             lval->indirect = 0;
-            return (0);
+            return 0;
         }
         else {
                 error ("invalid expression");
-                immed ();
-                output_number (0);
+                gen_immediate ();
+                output_number(0);
                 newline ();
                 junk ();
-                return (0);
+                return 0;
         }
 
 }
@@ -119,7 +117,7 @@ primary (lvalue_t *lval) {
 dbltest (lvalue_t *val1, lvalue_t *val2) {
         if (val1 == NULL)
                 return (FALSE);
-        if (val1->ptr_type != CINT)
+        if (!(val1->ptr_type & CINT))
                 return (FALSE);
         if (val2->ptr_type)
                 return (FALSE);
@@ -146,11 +144,11 @@ constant (val)
 int     val[];
 {
         if (number (val))
-                immed ();
+                gen_immediate ();
         else if (quoted_char (val))
-                immed ();
+                gen_immediate ();
         else if (quoted_string (val)) {
-                immed ();
+                gen_immediate ();
                 print_label (litlab);
                 output_byte ('+');
         } else
@@ -197,8 +195,11 @@ int     val[];
         if (minus < 0)
                 k = (-k);
         val[0] = k;
-        return (1);
-
+        if(k < 0) {
+            return (UINT);
+        } else {
+            return (CINT);
+        }
 }
 
 /**
@@ -258,13 +259,13 @@ spechar() {
         char c;
         c = ch();
 
-        if      (c == 'n') c = EOL;
+        if      (c == 'n') c = LF;
         else if (c == 't') c = TAB;
         else if (c == 'r') c = CR;
         else if (c == 'f') c = FFEED;
         else if (c == 'b') c = BKSP;
         else if (c == '0') c = EOS;
-        else if (c == EOS) return;
+        else if (c == EOS) return 0;
 
         gch();
         return (c);
@@ -285,26 +286,26 @@ char    *ptr;
         nargs = 0;
         blanks ();
         if (ptr == 0)
-                gpush ();
+                gen_push (HL_REG);
         while (!streq (line + lptr, ")")) {
                 if (endst ())
                         break;
                 expression (NO);
                 if (ptr == 0)
-                        swapstk ();
-                gpush ();
-                nargs = nargs + intsize();
+                        gen_swap_stack ();
+                gen_push (HL_REG);
+                nargs = nargs + INTSIZE;
                 if (!match (","))
                         break;
         }
         needbrack (")");
         if (aflag)
-                gnargs(nargs / intsize());
+                gnargs(nargs / INTSIZE);
         if (ptr)
-                gcall (ptr);
+                gen_call (ptr);
         else
                 callstk ();
-        stkp = modstk (stkp + nargs);
+        stkp = gen_modify_stack (stkp + nargs);
 }
 
 needlval ()

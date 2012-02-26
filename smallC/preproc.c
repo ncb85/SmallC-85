@@ -236,10 +236,9 @@ cpp ()
                         inchar ();
                 } else if ((ch () == '/') & (nch () == '/')) { // one line comment
                         while(gch());
-                        //readline();
-                } else if (an (ch ())) {
+                } else if (alphanumeric(ch ())) {
                         k = 0;
-                        while (an (ch ())) {
+                        while (alphanumeric(ch ())) {
                                 if (k < NAMEMAX)
                                         sname[k++] = ch ();
                                 gch ();

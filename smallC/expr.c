@@ -1,25 +1,37 @@
-/*      File expr.c: 2.2 (83/06/21,11:24:26) */
-/*% cc -O -c %
- *
+/*
+ * File expr.c: 2.2 (83/06/21,11:24:26)
  */
 
 #include <stdio.h>
 #include "defs.h"
 #include "data.h"
 
-/*struct lvalue {
-	SYMBOL *symbol ;		// symbol table address, or 0 for constant
-	int indirect ;			// type of indirect object, 0 for static object
-	int ptr_type ;			// type of pointer or array, 0 for other idents
-	int is_const ;			// true if constant expression
-	int const_val ;			// value of constant expression (& other uses)
-	TAG_SYMBOL *tagsym ;	/* tag symbol address, 0 if not struct
-	int (*binop)() ;		// function address of highest/last binary operator
-	char *stage_add ;		// stage addess of "oper 0" code, else 0
-	int val_type ;			// type of value calculated
-} ;
+//struct lvalue {
+//	SYMBOL *symbol ;		// symbol table address, or 0 for constant
+//	int indirect ;			// type of indirect object, 0 for static object
+//	int ptr_type ;			// type of pointer or array, 0 for other idents
+//	int is_const ;			// true if constant expression
+//	int const_val ;			// value of constant expression (& other uses)
+//	TAG_SYMBOL *tagsym ;            // tag symbol address, 0 if not struct
+//	int (*binop)() ;		// function address of highest/last binary operator
+//	char *stage_add ;		// stage addess of "oper 0" code, else 0
+//	int val_type ;			// type of value calculated
+//} ;
 
-#define LVALUE struct lvalue*/
+//#define LVALUE struct lvalue
+
+/**
+ * unsigned operand ?
+ */
+nosign(lvalue_t *is) {
+    symbol_table_t *ptr;
+    
+    if((is->ptr_type) ||
+      ((ptr = is->symbol) && (ptr->type & UNSIGNED))) {
+        return 1;
+    }
+    return 0;
+}
 
 /**
  * lval[0] - symbol table address, else 0 for constant
@@ -28,18 +40,16 @@
  * @param comma
  * @return 
  */
-expression (comma)
-int     comma;
-{
-        lvalue_t lval; //int     lval[3];
+expression(int comma) {
+        lvalue_t lval;
+        int k;
 
         do {
-                if (hier1 (&lval))
-                        rvalue (&lval);
+                if (k = hier1 (&lval))
+                        rvalue(&lval, k);
                 if (!comma)
                         return;
         } while (match (","));
-
 }
 
 /**
@@ -52,22 +62,19 @@ hier1 (lvalue_t *lval) {
         lvalue_t lval2[1];
         char    fc;
 
-        debug("hier1");
         k = hier1a (lval);
-        debugStr("hier1<-", lval->symbol);
         if (match ("=")) {
                 if (k == 0) {
                         needlval ();
                         return (0);
                 }
                 if (lval->indirect)
-                        gpush ();
-                if (hier1 (lval2))
-                        rvalue (lval2);
+                        gen_push(k);
+                if (k = hier1 (lval2))
+                        k = rvalue(lval2, k);
                 store (lval);
                 return (0);
-        } else
-        {      
+        } else {      
                 fc = ch();
                 if  (match ("-=") ||
                     match ("+=") ||
@@ -84,41 +91,52 @@ hier1 (lvalue_t *lval) {
                                 return (0);
                         }
                         if (lval->indirect)
-                                gpush ();
-                        rvalue (lval);
-                        gpush ();
-                        if (hier1 (lval2))
-                                rvalue (lval2);
+                                gen_push(k);
+                        k = rvalue(lval, k);
+                        gen_push(k);
+                        if (k = hier1 (lval2))
+                                k = rvalue(lval2, k);
                         switch (fc) {
                                 case '-':       {
                                         if (dbltest(lval,lval2))
-                                                gaslint();
-                                        gsub();
+                                                gen_multiply_by_two();
+                                        gen_sub();
                                         result (lval, lval2);
                                         break;
                                 }
                                 case '+':       {
                                         if (dbltest(lval,lval2))
-                                                gaslint();
-                                        gadd (lval,lval2);
+                                                gen_multiply_by_two();
+                                        gen_add (lval,lval2);
                                         result(lval,lval2);
                                         break;
                                 }
-                                case '*':       gmult (); break;
-                                case '/':       gdiv (); break;
-                                case '%':       gmod (); break;
-                                case '>':    gasr (); break;
-                                case '<':    gasl (); break;
-                                case '&':   gand (); break;
-                                case '^':       gxor (); break;
-                                case '|':       gor (); break;
+                                case '*':       gen_mult (); break;
+                                case '/':
+                                    if(nosign(lval) || nosign(lval2)) {
+                                        gen_udiv();
+                                    } else {
+                                        gen_div();
+                                    }
+                                    break;
+                                case '%':
+                                    if(nosign(lval) || nosign(lval2)) {
+                                        gen_umod();
+                                    } else {
+                                        gen_mod();
+                                    }
+                                    break;
+                                case '>': gen_arithm_shift_right (); break;
+                                case '<': gen_arithm_shift_left(); break;
+                                case '&': gen_and (); break;
+                                case '^': gen_xor (); break;
+                                case '|': gen_or (); break;
                         }
                         store (lval);
                         return (0);
                 } else
                         return (k);
         }
-
 }
 
 /**
@@ -130,20 +148,18 @@ hier1a (lvalue_t *lval) {
         int     k, lab1, lab2;
         lvalue_t lval2[1];
 
-        debug("hier1a");
         k = hier1b (lval);
-        debug("hier1a<-");
         blanks ();
         if (ch () != '?')
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER
                 if (match ("?")) {
-                        testjump (lab1 = getlabel (), FALSE);
-                        if (hier1b (lval2))
-                                rvalue (lval2);
-                        jump (lab2 = getlabel ());
+                        gen_test_jump (lab1 = getlabel (), FALSE);
+                        if (k = hier1b (lval2))
+                                k = rvalue(lval2, k);
+                        gen_jump (lab2 = getlabel ());
                         print_label (lab1);
                         output_label_terminator ();
                         newline ();
@@ -152,14 +168,13 @@ hier1a (lvalue_t *lval) {
                                 error ("missing colon");
                                 return (0);
                         }
-                        if (hier1b (lval2))
-                                rvalue (lval2);
+                        if (k = hier1b (lval2))
+                                k = rvalue(lval2, k);
                         print_label (lab2);
                         output_label_terminator ();
                         newline ();
                 } else
                         return (0);
-
 }
 
 /**
@@ -171,26 +186,23 @@ hier1b (lvalue_t *lval) {
         int     k, lab;
         lvalue_t lval2[1];
 
-        debug("hier1b");
         k = hier1c (lval);
-        debug("hier1b<-");
         blanks ();
         if (!sstreq ("||"))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER
                 if (match ("||")) {
-                        testjump (lab = getlabel (), TRUE);
-                        if (hier1c (lval2))
-                                rvalue (lval2);
+                        gen_test_jump (lab = getlabel (), TRUE);
+                        if (k = hier1c (lval2))
+                                k = rvalue(lval2, k);
                         print_label (lab);
                         output_label_terminator ();
                         newline ();
-                        gbool();
+                        gen_convert_primary_reg_value_to_bool();
                 } else
                         return (0);
-
 }
 
 /**
@@ -202,26 +214,23 @@ hier1c (lvalue_t *lval) {
         int     k, lab;
         lvalue_t lval2[1];
 
-        debug("hier1c");
         k = hier2 (lval);
-        debug("hier1c<-");
         blanks ();
         if (!sstreq ("&&"))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER
                 if (match ("&&")) {
-                        testjump (lab = getlabel (), FALSE);
-                        if (hier2 (lval2))
-                                rvalue (lval2);
+                        gen_test_jump (lab = getlabel (), FALSE);
+                        if (k = hier2 (lval2))
+                                k = rvalue(lval2, k);
                         print_label (lab);
                         output_label_terminator ();
                         newline ();
-                        gbool();
+                        gen_convert_primary_reg_value_to_bool();
                 } else
                         return (0);
-
 }
 
 /**
@@ -233,26 +242,23 @@ hier2 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier2");
         k = hier3 (lval);
-        debug("hier2<-");
         blanks ();
         if ((ch() != '|') | (nch() == '|') | (nch() == '='))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if ((ch() == '|') & (nch() != '|') & (nch() != '=')) {
                         inbyte ();
-                        gpush ();
-                        if (hier3 (lval2))
-                                rvalue (lval2);
-                        gor ();
+                        gen_push(k);
+                        if (k = hier3 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_or ();
                         blanks();
                 } else
                         return (0);
         }
-
 }
 
 /**
@@ -264,26 +270,23 @@ hier3 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier3");
         k = hier4 (lval);
-        debug("hier3<-");
         blanks ();
         if ((ch () != '^') | (nch() == '='))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if ((ch() == '^') & (nch() != '=')){
                         inbyte ();
-                        gpush ();
-                        if (hier4 (lval2))
-                                rvalue (lval2);
-                        gxor ();
+                        gen_push(k);
+                        if (k = hier4 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_xor ();
                         blanks();
                 } else
                         return (0);
         }
-
 }
 
 /**
@@ -295,21 +298,19 @@ hier4 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier4");
         k = hier5 (lval);
-        debug("hier4<-");
         blanks ();
         if ((ch() != '&') | (nch() == '|') | (nch() == '='))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if ((ch() == '&') & (nch() != '&') & (nch() != '=')) {
                         inbyte ();
-                        gpush ();
-                        if (hier5 (lval2))
-                                rvalue (lval2);
-                        gand ();
+                        gen_push(k);
+                        if (k = hier5 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_and ();
                         blanks();
                 } else
                         return (0);
@@ -326,26 +327,24 @@ hier5 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier5");
         k = hier6 (lval);
-        debug("hier5<-");
         blanks ();
         if (!sstreq ("==") &
             !sstreq ("!="))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if (match ("==")) {
-                        gpush ();
-                        if (hier6 (lval2))
-                                rvalue (lval2);
-                        geq ();
+                        gen_push(k);
+                        if (k = hier6 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_equal ();
                 } else if (match ("!=")) {
-                        gpush ();
-                        if (hier6 (lval2))
-                                rvalue (lval2);
-                        gne ();
+                        gen_push(k);
+                        if (k = hier6 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_not_equal ();
                 } else
                         return (0);
         }
@@ -361,9 +360,7 @@ hier6 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier6");
         k = hier7 (lval);
-        debug("hier6<-");
         blanks ();
         if (!sstreq ("<") &&
             !sstreq ("<=") &&
@@ -373,48 +370,48 @@ hier6 (lvalue_t *lval) {
         if (sstreq ("<<") || sstreq (">>"))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if (match ("<=")) {
-                        gpush ();
-                        if (hier7 (lval2))
-                                rvalue (lval2);
-                        if (lval->ptr_type || lval2->ptr_type) {
-                                gule ();
+                        gen_push(k);
+                        if (k = hier7 (lval2))
+                                k = rvalue(lval2, k);
+                        if (nosign(lval) || nosign(lval2)) {
+                                gen_unsigned_less_or_equal ();
                                 continue;
                         }
-                        gle ();
+                        gen_less_or_equal ();
                 } else if (match (">=")) {
-                        gpush ();
-                        if (hier7 (lval2))
-                                rvalue (lval2);
-                        if (lval->ptr_type || lval2->ptr_type) {
-                                guge ();
+                        gen_push(k);
+                        if (k = hier7 (lval2))
+                                k = rvalue(lval2, k);
+                        if (nosign(lval) || nosign(lval2)) {
+                                gen_unsigned_greater_or_equal ();
                                 continue;
                         }
-                        gge ();
+                        gen_greater_or_equal();
                 } else if ((sstreq ("<")) &&
                            !sstreq ("<<")) {
                         inbyte ();
-                        gpush ();
-                        if (hier7 (lval2))
-                                rvalue (lval2);
-                        if (lval->ptr_type || lval2->ptr_type) {
-                                gult ();
+                        gen_push(k);
+                        if (k = hier7 (lval2))
+                                k = rvalue(lval2, k);
+                        if (nosign(lval) || nosign(lval2)) {
+                                gen_unsigned_less_than ();
                                 continue;
                         }
-                        glt ();
+                        gen_less_than ();
                 } else if ((sstreq (">")) &&
                            !sstreq (">>")) {
                         inbyte ();
-                        gpush ();
-                        if (hier7 (lval2))
-                                rvalue (lval2);
-                        if (lval->ptr_type || lval2->ptr_type) {
-                                gugt ();
+                        gen_push(k);
+                        if (k = hier7 (lval2))
+                                k = rvalue(lval2, k);
+                        if (nosign(lval) || nosign(lval2)) {
+                                gen_usigned_greater_than ();
                                 continue;
                         }
-                        ggt ();
+                        gen_greater_than();
                 } else
                         return (0);
                 blanks ();
@@ -431,28 +428,26 @@ hier7 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier7");
         k = hier8 (lval);
-        debug("hier7<-");
         blanks ();
         if (!sstreq (">>") &&
             !sstreq ("<<") || sstreq(">>=") || sstreq("<<="))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if (sstreq(">>") && ! sstreq(">>=")) {
                         inbyte(); inbyte();
-                        gpush ();
-                        if (hier8 (lval2))
-                                rvalue (lval2);
-                        gasr ();
+                        gen_push(k);
+                        if (k = hier8 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_arithm_shift_right ();
                 } else if (sstreq("<<") && ! sstreq("<<=")) {
                         inbyte(); inbyte();
-                        gpush ();
-                        if (hier8 (lval2))
-                                rvalue (lval2);
-                        gasl ();
+                        gen_push(k);
+                        if (k = hier8 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_arithm_shift_left();
                 } else
                         return (0);
                 blanks();
@@ -469,45 +464,42 @@ hier8 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier8");
         k = hier9 (lval);
-        debug("hier8<-");
         blanks ();
         if ((ch () != '+') & (ch () != '-') | nch() == '=')
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if (match ("+")) {
-                        gpush ();
-                        if (hier9 (lval2))
-                                rvalue (lval2);
+                        gen_push(k);
+                        if (k = hier9 (lval2))
+                                k = rvalue(lval2, k);
                         /* if left is pointer and right is int, scale right */
                         if (dbltest (lval, lval2))
-                                gaslint ();
+                                gen_multiply_by_two ();
                         /* will scale left if right int pointer and left int */
-                        gadd (lval,lval2);
+                        gen_add (lval,lval2);
                         result (lval, lval2);
                 } else if (match ("-")) {
-                        gpush ();
-                        if (hier9 (lval2))
-                                rvalue (lval2);
+                        gen_push(k);
+                        if (k = hier9 (lval2))
+                                k = rvalue(lval2, k);
                         /* if dbl, can only be: pointer - int, or
                                                 pointer - pointer, thus,
                                 in first case, int is scaled up,
                                 in second, result is scaled down. */
                         if (dbltest (lval, lval2))
-                                gaslint ();
-                        gsub ();
+                                gen_multiply_by_two ();
+                        gen_sub ();
                         /* if both pointers, scale result */
-                        if ((lval->ptr_type == CINT) && (lval2->ptr_type == CINT)) {
-                                gasrint(); /* divide by intsize */
+                        if ((lval->ptr_type & CINT) && (lval2->ptr_type & CINT)) {
+                                gen_divide_by_two(); /* divide by intsize */
                         }
                         result (lval, lval2);
                 } else
                         return (0);
         }
-
 }
 
 /**
@@ -519,31 +511,37 @@ hier9 (lvalue_t *lval) {
         int     k;
         lvalue_t lval2[1];
 
-        debug("hier9");
         k = hier10 (lval);
-        debug("hier9<-");
         blanks ();
         if (((ch () != '*') && (ch () != '/') &&
                 (ch () != '%')) || (nch() == '='))
                 return (k);
         if (k)
-                rvalue (lval);
+                k = rvalue(lval, k);
         FOREVER {
                 if (match ("*")) {
-                        gpush ();
-                        if (hier10 (lval2))
-                                rvalue (lval2);
-                        gmult ();
+                        gen_push(k);
+                        if (k = hier10 (lval2))
+                                k = rvalue(lval2, k);
+                        gen_mult ();
                 } else if (match ("/")) {
-                        gpush ();
-                        if (hier10 (lval2))
-                                rvalue (lval2);
-                        gdiv ();
+                        gen_push(k);
+                        if (k = hier10 (lval2))
+                                k = rvalue(lval2, k);
+                        if(nosign(lval) || nosign(lval2)) {
+                            gen_udiv();
+                        } else {
+                            gen_div ();
+                        }
                 } else if (match ("%")) {
-                        gpush ();
-                        if (hier10 (lval2))
-                                rvalue (lval2);
-                        gmod ();
+                        gen_push(k);
+                        if (k = hier10 (lval2))
+                                k = rvalue(lval2, k);
+                        if(nosign(lval) || nosign(lval2)) {
+                            gen_umod();
+                        } else {
+                            gen_mod ();
+                        }
                 } else
                         return (0);
         }
@@ -559,16 +557,15 @@ hier10 (lvalue_t *lval) {
         int     k;
         symbol_table_t *ptr;
 
-        debug("hier10");
         if (match ("++")) {
                 if ((k = hier10 (lval)) == 0) {
                         needlval ();
                         return (0);
                 }
                 if (lval->indirect)
-                        gpush ();
-                rvalue (lval);
-                ginc (lval);
+                        gen_push(k);
+                k = rvalue(lval, k);
+                gen_increment_primary_reg (lval);
                 store (lval);
                 return (0);
         } else if (match ("--")) {
@@ -577,39 +574,39 @@ hier10 (lvalue_t *lval) {
                         return (0);
                 }
                 if (lval->indirect)
-                        gpush ();
-                rvalue (lval);
-                gdec (lval);
+                        gen_push(k);
+                k = rvalue(lval, k);
+                gen_decrement_primary_reg (lval);
                 store (lval);
                 return (0);
         } else if (match ("-")) {
                 k = hier10 (lval);
                 if (k)
-                        rvalue (lval);
-                gneg ();
+                        k = rvalue(lval, k);
+                gen_twos_complement();
                 return (0);
         } else if (match ("~")) {
                 k = hier10 (lval);
                 if (k)
-                        rvalue (lval);
-                gcom ();
+                        k = rvalue(lval, k);
+                gen_complement ();
                 return (0);
         } else if (match ("!")) {
                 k = hier10 (lval);
                 if (k)
-                        rvalue (lval);
-                glneg ();
+                        k = rvalue(lval, k);
+                gen_logical_negation();
                 return (0);
         } else if (ch()=='*' && nch() != '=') {
                 inbyte();
                 k = hier10 (lval);
                 if (k)
-                        rvalue (lval);
+                        k = rvalue(lval, k);
                 if (ptr = lval->symbol)
                         lval->indirect = ptr->type;
                 else
                         lval->indirect = CINT;
-                lval->ptr_type = 0;  /* flag as not pointer or array */
+                lval->ptr_type = 0;  // flag as not pointer or array
                 return (1);
         } else if (ch()=='&' && nch()!='&' && nch()!='=') {
                 inbyte();
@@ -623,26 +620,24 @@ hier10 (lvalue_t *lval) {
                 if (lval->indirect)
                         return (0);
                 /* global and non-array */
-                immed ();
-                prefix ();
+                gen_immediate ();
                 output_string ((ptr = lval->symbol)->name);
                 newline ();
                 lval->indirect = ptr->type;
                 return (0);
         } else {
                 k = hier11 (lval);
-                debugInt("hier10<-", k);
                 if (match ("++")) {
                         if (k == 0) {
                                 needlval ();
                                 return (0);
                         }
                         if (lval->indirect)
-                                gpush ();
-                        rvalue (lval);
-                        ginc (lval);
+                                gen_push(k);
+                        k = rvalue(lval, k);
+                        gen_increment_primary_reg (lval);
                         store (lval);
-                        gdec (lval);
+                        gen_decrement_primary_reg (lval);
                         return (0);
                 } else if (match ("--")) {
                         if (k == 0) {
@@ -650,11 +645,11 @@ hier10 (lvalue_t *lval) {
                                 return (0);
                         }
                         if (lval->indirect)
-                                gpush ();
-                        rvalue (lval);
-                        gdec (lval);
+                                gen_push(k);
+                        k = rvalue(lval, k);
+                        gen_decrement_primary_reg (lval);
                         store (lval);
-                        ginc (lval);
+                        gen_increment_primary_reg (lval);
                         return (0);
                 } else
                         return (k);
@@ -671,10 +666,7 @@ hier11 (lvalue_t *lval) {
         int     k;
         symbol_table_t *ptr;
 
-        debug("hier11");
         k = primary (lval);
-        debugInt("hier11<-", k);
-        debugStr("hier11<-", lval->symbol->name);
         ptr = lval->symbol;
         blanks ();
         if ((ch () == '[') | (ch () == '('))
@@ -686,25 +678,25 @@ hier11 (lvalue_t *lval) {
                                         needbrack ("]");
                                         return (0);
                                 } else if (ptr->identity == POINTER)
-                                        rvalue (lval);
+                                        k = rvalue(lval, k);
                                 else if (ptr->identity != ARRAY) {
                                         error ("can't subscript");
                                         k = 0;
                                 }
-                                gpush ();
+                                gen_push(k);
                                 expression (YES);
                                 needbrack ("]");
-                                if (ptr->type == CINT)
-                                        gaslint ();
-                                gadd (NULL,NULL);
+                                if (ptr->type & CINT)
+                                        gen_multiply_by_two ();
+                                gen_add (NULL,NULL);
                                 lval->symbol = 0;
                                 lval->indirect = ptr->type;
-                                k = 1;
+                                k = HL_REG;
                         } else if (match ("(")) {
                                 if (ptr == 0)
                                         callfunction (0);
                                 else if (ptr->identity != FUNCTION) {
-                                        rvalue (lval);
+                                        k = rvalue(lval, k);
                                         callfunction (0);
                                 } else
                                         callfunction (ptr);
@@ -716,13 +708,11 @@ hier11 (lvalue_t *lval) {
         if (ptr == 0)
                 return (k);
         if (ptr->identity == FUNCTION) {
-                immed ();
-                prefix ();
+                gen_immediate ();
                 output_string (ptr);
                 newline ();
                 return (0);
         }
-        debug("hier11 ret");
         return (k);
 }
 

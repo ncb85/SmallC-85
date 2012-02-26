@@ -59,7 +59,7 @@ char    *s;
 fixname (s)
 char    *s;
 {
-        while (*s && *s++ != EOL);
+        while (*s && *s++ != LF);
         if (!*s) return;
         *(--s) = 0;
 
@@ -97,7 +97,7 @@ readline () {
                         unit = input;
                 kill ();
                 while ((k = fgetc (unit)) != EOF) {
-                        if ((k == CR) || (k == EOL) | (lptr >= LINEMAX))
+                        if ((k == CR) || (k == LF) | (lptr >= LINEMAX))
                                 break;
                         line[lptr++] = k;
                 }
@@ -109,7 +109,7 @@ readline () {
                         }
                 if (lptr) {
                         if ((ctext) & (cmode)) {
-                                comment ();
+                                gen_comment ();
                                 output_string (line);
                                 newline ();
                         }
@@ -179,7 +179,7 @@ char    *str;
 #if __CYGWIN__ == 1
         putchar (CR);
 #endif
-        putchar (EOL);
+        putchar (LF);
         while (str[k])
                 putchar (str[k++]);
 }

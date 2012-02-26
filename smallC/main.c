@@ -1,6 +1,5 @@
-/*      File main.c: 2.7 (84/11/28,10:14:56) */
-/*% cc -O -c %
- *
+/*
+ * File main.c: 2.7 (84/11/28,10:14:56)
  */
 
 #include <stdio.h>
@@ -10,22 +9,22 @@
 #include "data.h"
 
 main(int argc, char *argv[]) {
-    char *p = NULL, *bp;
-    int smacptr;
+    char *param = NULL, *bp;
+    int smacptr, i;
     macptr = 0;
     ctext = 0;
     errs = 0;
     aflag = 1;
-    int i=1;
-    for (; i<argc; i++) {
-        p = argv[i];
-        if (*p == '-') {
-            while (*++p) {
-                switch (*p) {
+    uflag = 0;
+    for (i=1; i<argc; i++) {
+        param = argv[i];
+        if (*param == '-') {
+            while (*++param) {
+                switch (*param) {
                     case 't': case 'T': // output c source as asm comments
                         ctext = 1;
                         break;
-                    case 's': case 'S': // assemble .s files - this option does not work
+                    case 's': case 'S': // assemble .s files - do #define ASNM to make it work
                         sflag = 1;
                         break;
                     case 'c': case 'C': // linker - this option does not work
@@ -34,13 +33,16 @@ main(int argc, char *argv[]) {
                     case 'a': case 'A': // no argument count in A to function calls
                         aflag = 0;
                         break;
+                    case 'u': case 'U': // use undocumented 8085 instructions
+                        uflag = 1;
+                        break;
                     case 'd': case 'D': // define macro
-                        bp = ++p;
-                        if (!*p) usage();
-                        while (*p && *p != '=') p++;
-                        if (*p == '=') *p = '\t';
-                        while (*p) p++;
-                        p--;
+                        bp = ++param;
+                        if (!*param) usage();
+                        while (*param && *param != '=') param++;
+                        if (*param == '=') *param = '\t';
+                        while (*param) param++;
+                        param--;
                         defmac(bp);
                         break;
                     default:
@@ -52,86 +54,100 @@ main(int argc, char *argv[]) {
         }
     }
 
-    smacptr = macptr;
-    if (!p) {
-        usage();
+    smacptr = macptr; // command line defined macros -d
+    //if (!param) {
+    //    usage();
+    //}
+    if (i == argc) {
+        compile(NULL); // training mode - read code from stdin
+        exit(0);
     }
 
     for (; i<argc; i++) {
-        p = argv[i];
+        param = argv[i];
         errfile = 0;
-        if (filename_typeof(p) == 'c') {
-            global_table_index = 1; //glbptr = STARTGLB;
-            local_table_index = NUMBER_OF_GLOBALS; //locptr = STARTLOC;
-            while_table_index = 0; //wsptr = ws;
-            inclsp =
-            iflevel =
-            skiplevel =
-            swstp =
-            litptr =
-            stkp =
-            errcnt =
-            ncmp =
-            lastst =
-            //quote[1] =
-            0;
-            macptr = smacptr;
-            input2 = NULL;
-            //quote[0] = '"';
-            cmode = 1;
-            glbflag = 1;
-            nxtlab = 0;
-            litlab = getlabel();
-            defmac("end\tmemory");
-            //add_global("memory", ARRAY, CCHAR, 0, EXTERN);
-            //add_global("stack", ARRAY, CCHAR, 0, EXTERN);
-            rglobal_table_index = global_table_index; //rglbptr = glbptr;
-            //add_global("etext", ARRAY, CCHAR, 0, EXTERN);
-            //add_global("edata", ARRAY, CCHAR, 0, EXTERN);
-            defmac("short\tint");
-            initmac();
-            create_initials();
-            /*
-             *      compiler body
-             */
-            if (!openin(p))
-                return;
-            if (!openout())
-                return;
-            header();
-            code_segment_gtext();
-            parse();
-            fclose(input);
-            data_segment_gdata();
-            dumplits();
-            dumpglbs();
-            errorsummary();
-            trailer();
-            fclose(output);
-            pl("");
-            errs = errs || errfile;
-#ifndef NOASLD
-        }
-        if (!errfile && !sflag) {
-            errs = errs || assemble(p);
-        }
-#else
-        } else {
-            fputs("Don't understand file ", stderr);
-            fputs(p, stderr);
-            errs = 1;
-        }
-#endif
+        macptr = smacptr;
+        compile(param);
     }
 #ifndef NOASLD
     if (!errs && !sflag && !cflag)
         errs = errs || link();
 #endif
     exit(errs != 0);
-
 }
 
-FEvers() {
+/**
+ * compile one file if filename is NULL redirect do to stdin/stdout
+ * @param file filename
+ * @return 
+ */
+compile(char *file) {
+    if (file == NULL || filename_typeof(file) == 'c') {
+        global_table_index = 1; //glbptr = STARTGLB;
+        local_table_index = NUMBER_OF_GLOBALS; //locptr = STARTLOC;
+        while_table_index = 0; //wsptr = ws;
+        inclsp =
+        iflevel =
+        skiplevel =
+        swstp =
+        litptr =
+        stkp =
+        errcnt =
+        ncmp =
+        lastst =
+        //quote[1] =
+        0;
+        input2 = NULL;
+        //quote[0] = '"';
+        cmode = 1;
+        glbflag = 1;
+        nxtlab = 0;
+        litlab = getlabel();
+        defmac("end\tmemory");
+        //add_global("memory", ARRAY, CCHAR, 0, EXTERN);
+        //add_global("stack", ARRAY, CCHAR, 0, EXTERN);
+        rglobal_table_index = global_table_index; //rglbptr = glbptr;
+        //add_global("etext", ARRAY, CCHAR, 0, EXTERN);
+        //add_global("edata", ARRAY, CCHAR, 0, EXTERN);
+        defmac("short\tint");
+        initmac();
+        create_initials();
+        // compiler body
+        if (file == NULL) {
+            input = stdin;
+        } else if (!openin(file))
+            return;
+        if (file == NULL) {
+            output = stdout;
+        } else if (!openout())
+            return;
+        header();
+        code_segment_gtext();
+        parse();
+        fclose(input);
+        data_segment_gdata();
+        dumplits();
+        dumpglbs();
+        errorsummary();
+        trailer();
+        fclose(output);
+        pl("");
+        errs = errs || errfile;
+#ifndef NOASLD
+    }
+    if (!errfile && !sflag) {
+        errs = errs || assemble(file);
+    }
+#else
+    } else {
+        fputs("Don't understand file ", stderr);
+        fputs(file, stderr);
+        errs = 1;
+    }
+#endif
+}
+
+frontend_version() {
     output_string("\tFront End (2.7,84/11/28)");
 }
 
@@ -140,16 +156,21 @@ FEvers() {
  * @return exits the execution
  */
 usage() {
-    fputs("usage: sccXXXX [-tcsa] [-dSYM[=VALUE]] files\n", stderr);
+    fputs("usage: sccXXXX [-tcsah] [-dSYM[=VALUE]] files\n", stderr);
+    fputs("-t: output c source as asm comments\n", stderr);
+    fputs("-a: no argument count in A to function calls\n", stderr);
+    fputs("-d: define macro\n", stderr);
+    fputs("-s: assemble generated output, not implemented\n", stderr);
+    fputs("-c: link, not implemented\n", stderr);
+    fputs("-h: displays usage\n", stderr);
+    fputs("files - one or more files. no filename redirects to stdin/stdout\n", stderr);
     exit(1);
 }
 
 /**
  * process all input text
- *
  * at this level, only static declarations, defines, includes,
  * and function definitions are legal.
- *
  */
 parse() {
     while (!feof(input)) {
@@ -179,19 +200,17 @@ parse() {
  * @param stclass
  * @return 
  */
-dodcls(stclass)
-int stclass;
-{
+dodcls(int stclass) {
+    int type;
     blanks();
-    if (amatch("char", 4))
-        declare_global(CCHAR, stclass);
-    else if (amatch("int", 3))
-        declare_global(CINT, stclass);
-    else if (stclass == PUBLIC)
+    if (type = get_type()) {
+        declare_global(type, stclass);
+    } else if (stclass == PUBLIC) {
         return (0);
-    else
+    } else {
         declare_global(CINT, stclass);
-    ns();
+    }
+    need_semicolon();
     return (1);
 }
 
@@ -207,7 +226,7 @@ dumplits() {
     output_label_terminator();
     k = 0;
     while (k < litptr) {
-        defbyte();
+        gen_def_byte();
         j = 8;
         while (j--) {
             output_number(litq[k++] & 127);
@@ -224,7 +243,7 @@ dumplits() {
  * dump all static variables
  */
 dumpglbs() {
-    int dim;
+    int dim, i, list_size, line_count, value;
 
     if (!glbflag)
         return;
@@ -234,11 +253,11 @@ dumpglbs() {
         if (symbol.identity != FUNCTION) {
             ppubext(&symbol);
             if (symbol.storage != EXTERN) {
-                prefix();
                 output_string(symbol.name);
                 output_label_terminator();
                 dim = symbol.offset;
-                int i, list_size = 0, line_count = 0;
+                list_size = 0;
+                line_count = 0;
                 if (find_symbol(symbol.name)) { // has initials
                     list_size = get_size(symbol.name);
                     if (dim == -1) {
@@ -249,14 +268,14 @@ dumpglbs() {
                     if (line_count % 10 == 0) {
                         newline();
                         if ((symbol.type & CINT) || (symbol.identity == POINTER)) {
-                            defword();
+                            gen_def_word();
                         } else {
-                            defbyte();
+                            gen_def_byte();
                         }
                     }
                     if (i < list_size) {
                         // dump data
-                        int value = get_item_at(symbol.name, i);
+                        value = get_item_at(symbol.name, i);
                         output_number(value);
                     } else {
                         // dump zero, no more data available
@@ -287,24 +306,25 @@ errorsummary() {
     if (ncmp)
         error("missing closing bracket");
     newline();
-    comment();
+    gen_comment();
     output_decimal(errcnt);
     if (errcnt) errfile = YES;
     output_string(" error(s) in compilation");
     newline();
-    comment();
+    gen_comment();
     output_with_tab("literal pool:");
     output_decimal(litptr);
     newline();
-    comment();
+    gen_comment();
     output_with_tab("global pool:");
     output_decimal(global_table_index - rglobal_table_index);
     newline();
-    comment();
+    gen_comment();
     output_with_tab("Macro pool:");
     output_decimal(macptr);
     newline();
-    pl(errcnt ? "Error(s)" : "No errors");
+    if (errcnt > 0)
+        pl("Error(s)");
 }
 
 /**
@@ -312,9 +332,7 @@ errorsummary() {
  * @param s the filename
  * @return the last char if it contains dot, space otherwise
  */
-filename_typeof(s)
-char *s;
-{
+filename_typeof(char *s) {
     s += strlen(s) - 2;
     if (*s == '.')
         return (*(s + 1));
