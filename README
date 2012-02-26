@@ -1,7 +1,8 @@
 Revived version of SmallC based on Chris Lewis' port to UNIX V. I have
-mainly rewritten code to use structures and to make it compile silently.
+mainly rewritten code to use structures and to make it compile using GCC
+silently without warnigns.
 
-Support for one line comments from C99 specifications were added as well
+Support for one line comments from C99 specification was added as well
 as capability to handle Windows EOLs.
 
 Initialisation of global variables is also possible. When not initialised
@@ -12,8 +13,8 @@ Furthermore support for ANSI style method declaration has been added.
 Generated code is suitable for ASXXXX assembler/linker.
 
 ***** update *****
-- support for unsigned types
-- support for undocumented 8085 istructions LHLX, SHLX, LDSI, ARHL
+Support for unsigned types
+Support for undocumented 8085 istructions LHLX, SHLX, LDSI, ARHL
 
 -------------------------- original posting ------------------------------
 
