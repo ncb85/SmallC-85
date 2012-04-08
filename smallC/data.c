@@ -7,13 +7,13 @@
 #include "defs.h"
 
 /* storage words */
-symbol_table_t symbol_table[NUMBER_OF_GLOBALS + NUMBER_OF_LOCALS];
+SYMBOL symbol_table[NUMBER_OF_GLOBALS + NUMBER_OF_LOCALS];
 int global_table_index, rglobal_table_index;
 int local_table_index;
 //char    symtab[SYMTBSZ];
 //char    *glbptr, *rglbptr, *locptr;
 
-while_table_t ws[WSTABSZ]; //int     ws[WSTABSZ];
+WHILE ws[WSTABSZ]; //int     ws[WSTABSZ];
 //while_table_t *wsptr; //int     *wsptr;
 int     while_table_index;
 

@@ -81,9 +81,7 @@ void add_data(char *symbol_name, int type, int value) {
  */
 int get_size(char *symbol_name) {
     int result = 0;
-    if (find_symbol(symbol_name) == 0) {
-        debugStr("get_size symbol not found %s", symbol_name);
-    } else {
+    if (find_symbol(symbol_name) != 0) {
         result = ((unsigned char)initials_table_ptr[INIT_LENGTH] << 8) + (unsigned char)initials_table_ptr[INIT_LENGTH+1];
     }
     return result;
@@ -97,9 +95,7 @@ int get_size(char *symbol_name) {
  */
 int get_item_at(char *symbol_name, int position) {
     int result = 0;
-    if (find_symbol(symbol_name) == 0) {
-        debugStr("get_item_at symbol not found %s", symbol_name);
-    } else {
+    if (find_symbol(symbol_name) != 0) {
         int index  = NAMESIZE + 1 + 2 + (2 * position);
         result = (initials_table_ptr[index] << 8) + (unsigned char)initials_table_ptr[index+1];
     }

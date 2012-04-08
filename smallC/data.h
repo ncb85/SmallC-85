@@ -2,10 +2,10 @@
 
 /* storage words */
 
-extern symbol_table_t symbol_table[NUMBER_OF_GLOBALS + NUMBER_OF_LOCALS]; //extern  char    symtab[];
+extern SYMBOL symbol_table[NUMBER_OF_GLOBALS + NUMBER_OF_LOCALS]; //extern  char    symtab[];
 extern int global_table_index, rglobal_table_index; //extern  char    *glbptr, *rglbptr, *locptr;
 extern int local_table_index;
-extern  while_table_t ws[]; //int     ws[];
+extern  WHILE ws[]; //int     ws[];
 extern  int     while_table_index; //*wsptr;
 extern  int     swstcase[];
 extern  int     swstlab[];

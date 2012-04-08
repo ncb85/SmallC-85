@@ -160,6 +160,7 @@ usage() {
     fputs("-t: output c source as asm comments\n", stderr);
     fputs("-a: no argument count in A to function calls\n", stderr);
     fputs("-d: define macro\n", stderr);
+    fputs("-u: use undocumented 8085 instructions\n", stderr);
     fputs("-s: assemble generated output, not implemented\n", stderr);
     fputs("-c: link, not implemented\n", stderr);
     fputs("-h: displays usage\n", stderr);
@@ -249,17 +250,17 @@ dumpglbs() {
         return;
     current_symbol_table_idx = rglobal_table_index;
     while (current_symbol_table_idx < global_table_index) {
-        symbol_table_t symbol = symbol_table[current_symbol_table_idx];
-        if (symbol.identity != FUNCTION) {
-            ppubext(&symbol);
-            if (symbol.storage != EXTERN) {
-                output_string(symbol.name);
+        SYMBOL *symbol = &symbol_table[current_symbol_table_idx];
+        if (symbol->identity != FUNCTION) {
+            ppubext(symbol);
+            if (symbol->storage != EXTERN) {
+                output_string(symbol->name);
                 output_label_terminator();
-                dim = symbol.offset;
+                dim = symbol->offset;
                 list_size = 0;
                 line_count = 0;
-                if (find_symbol(symbol.name)) { // has initials
-                    list_size = get_size(symbol.name);
+                if (find_symbol(symbol->name)) { // has initials
+                    list_size = get_size(symbol->name);
                     if (dim == -1) {
                         dim = list_size;
                     }
@@ -267,7 +268,7 @@ dumpglbs() {
                 for (i=0; i<dim; i++) {
                     if (line_count % 10 == 0) {
                         newline();
-                        if ((symbol.type & CINT) || (symbol.identity == POINTER)) {
+                        if ((symbol->type & CINT) || (symbol->identity == POINTER)) {
                             gen_def_word();
                         } else {
                             gen_def_byte();
@@ -275,7 +276,7 @@ dumpglbs() {
                     }
                     if (i < list_size) {
                         // dump data
-                        value = get_item_at(symbol.name, i);
+                        value = get_item_at(symbol->name, i);
                         output_number(value);
                     } else {
                         // dump zero, no more data available
@@ -293,7 +294,7 @@ dumpglbs() {
                 newline();
             }
         } else {
-            fpubext(&symbol);
+            fpubext(symbol);
         }
         current_symbol_table_idx++;
     }

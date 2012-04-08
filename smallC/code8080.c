@@ -65,7 +65,6 @@ void output_label_prefix() {
  */
 void output_label_terminator () {
     output_byte (':');
-
 }
 
 /**
@@ -86,21 +85,21 @@ void trailer() {
  * text (code) segment
  */
 void code_segment_gtext() {
-    output_line ("\t.area  SMALLC_GENERATED  (REL,CON,CSEG) ;cseg");
+    output_line ("\t.area  SMALLC_GENERATED  (REL,CON,CSEG)");
 }
 
 /**
  * data segment
  */
 void data_segment_gdata() {
-    output_line ("\t.area  SMALLC_GENERATED_DATA  (REL,CON,DSEG) ;dseg");
+    output_line ("\t.area  SMALLC_GENERATED_DATA  (REL,CON,DSEG)");
 }
 
 /**
  * Output the variable symbol at scptr as an extrn or a public
  * @param scptr
  */
-void ppubext(symbol_table_t *scptr)  {
+void ppubext(SYMBOL *scptr)  {
         if (symbol_table[current_symbol_table_idx].storage == STATIC) return;
         output_with_tab (scptr->storage == EXTERN ? ";extrn\t" : ".globl\t");
         output_string (scptr->name);
@@ -111,7 +110,7 @@ void ppubext(symbol_table_t *scptr)  {
  * Output the function symbol at scptr as an extrn or a public
  * @param scptr
  */
-void fpubext(symbol_table_t *scptr) {
+void fpubext(SYMBOL *scptr) {
         if (scptr->storage == STATIC) return;
         output_with_tab (scptr->offset == FUNCTION ? ".globl\t" : ";extrn\t");
         output_string (scptr->name);
@@ -131,7 +130,7 @@ void output_number(num) int num; {
  * fetch a static memory cell into the primary register
  * @param sym
  */
-void gen_get_memory(symbol_table_t *sym) {
+void gen_get_memory(SYMBOL *sym) {
     if ((sym->identity != POINTER) && (sym->type == CCHAR)) {
         output_with_tab ("lda\t");
         output_string (sym->name);
@@ -155,7 +154,7 @@ void gen_get_memory(symbol_table_t *sym) {
  * @param sym the symbol name
  * @return which register pair contains result
  */
-int gen_get_location(symbol_table_t *sym) {
+int gen_get_location(SYMBOL *sym) {
         /*gen_immediate ();
         if (sym->storage == LSTATIC) {
             print_label(sym->offset);
@@ -191,7 +190,7 @@ int gen_get_location(symbol_table_t *sym) {
  * asm - store the primary register into the specified static memory cell
  * @param sym
  */
-void gen_put_memory(symbol_table_t *sym) {
+void gen_put_memory(SYMBOL *sym) {
     if ((sym->identity != POINTER) && (sym->type & CCHAR)) {
         output_line ("mov \ta,l");
         output_with_tab ("sta \t");
@@ -209,7 +208,7 @@ void gen_put_memory(symbol_table_t *sym) {
  */
 void gen_put_indirect(char typeobj) {
     gen_pop ();
-    if (typeobj == CCHAR) {
+    if (typeobj & CCHAR) {
         //gen_call("ccpchar");
         output_line("mov \ta,l");
         output_line("stax\td");
@@ -392,10 +391,8 @@ gen_def_word() {
  * modify the stack pointer to the new value indicated
  * @param newstkp new value
  */
-gen_modify_stack(newstkp)
-int     newstkp;
-{
-        int     k;
+gen_modify_stack(int newstkp) {
+        int k;
 
         k = newstkp - stkp;
         if (k == 0)

@@ -130,29 +130,6 @@ getarg(int t) {
     }
 }
 
-//#define DEBUG
-
-debug(char *text) {
-#ifdef DEBUG
-    printf("%s\n", text);
-    fflush(stdout);
-#endif
-}
-
-debugStr(char *text, char *buffer) {
-#ifdef DEBUG
-    printf("%s %s\n", text, buffer);
-    fflush(stdout);
-#endif
-}
-
-debugInt(char *text, int value) {
-#ifdef DEBUG
-    printf("%s %d\n", text, value);
-    fflush(stdout);
-#endif
-}
-
 doAnsiArguments() {
     int type;
     type = get_type();

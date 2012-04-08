@@ -81,7 +81,7 @@ int     typ, stclass;
                                         k = INTSIZE;
                                 }
                         } else
-                                if ((typ & CCHAR) & (j != POINTER))
+                                if ((typ & CCHAR) && (j != POINTER))
                                         k = 1;
                                 else
                                         k = INTSIZE;
@@ -234,7 +234,7 @@ int findloc (char *sname) {
  * @return new index
  */
 int add_global (char *sname, int identity, int type, int offset, int storage) {
-        symbol_table_t *symbol;
+        SYMBOL *symbol;
         char *buffer_ptr;
         if (current_symbol_table_idx = findglb (sname)) {
                 return (current_symbol_table_idx);
@@ -266,7 +266,7 @@ int add_global (char *sname, int identity, int type, int offset, int storage) {
  */
 int add_local (char *sname, int identity, int type, int offset, int storage_class) {
         int k;
-        symbol_table_t *symbol;
+        SYMBOL *symbol;
         char *buffer_ptr;
         
         if (current_symbol_table_idx = findloc (sname)) {

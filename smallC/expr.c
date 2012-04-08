@@ -24,7 +24,7 @@
  * unsigned operand ?
  */
 nosign(lvalue_t *is) {
-    symbol_table_t *ptr;
+    SYMBOL *ptr;
     
     if((is->ptr_type) ||
       ((ptr = is->symbol) && (ptr->type & UNSIGNED))) {
@@ -555,7 +555,7 @@ hier9 (lvalue_t *lval) {
  */
 hier10 (lvalue_t *lval) {
         int     k;
-        symbol_table_t *ptr;
+        SYMBOL *ptr;
 
         if (match ("++")) {
                 if ((k = hier10 (lval)) == 0) {
@@ -664,7 +664,7 @@ hier10 (lvalue_t *lval) {
  */
 hier11 (lvalue_t *lval) {
         int     k;
-        symbol_table_t *ptr;
+        SYMBOL *ptr;
 
         k = primary (lval);
         ptr = lval->symbol;

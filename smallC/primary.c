@@ -9,9 +9,8 @@
 primary (lvalue_t *lval) {
         char    sname[NAMESIZE];
         int     num[1], k, symbol_table_idx, offset, reg;
-        symbol_table_t *symbol;
+        SYMBOL *symbol;
 
-        debug("primary");
         lval->ptr_type = 0;  /* clear pointer/array type */
         if (match ("(")) {
                 k = hier1 (lval);

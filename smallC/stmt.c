@@ -177,7 +177,7 @@ doif() {
  * "while" statement
  */
 dowhile() {
-        while_table_t ws; //int     ws[7];
+        WHILE ws; //int     ws[7];
 
         ws.symbol_idx = local_table_index;
         ws.stack_pointer = stkp;
@@ -199,7 +199,7 @@ dowhile() {
  * "do" statement
  */
 dodo() {
-        while_table_t ws; //int     ws[7];
+        WHILE ws; //int     ws[7];
 
         ws.symbol_idx = local_table_index;
         ws.stack_pointer = stkp;
@@ -226,8 +226,8 @@ dodo() {
  * "for" statement
  */
 dofor() {
-        while_table_t ws; //int     ws[7],
-        while_table_t *pws;
+        WHILE ws; //int     ws[7],
+        WHILE *pws;
 
         ws.symbol_idx = local_table_index;
         ws.stack_pointer = stkp;
@@ -271,8 +271,8 @@ dofor() {
  * "switch" statement
  */
 doswitch() {
-        while_table_t ws; //int     ws[7];
-        while_table_t *ptr; //int     *ptr;
+        WHILE ws; //int     ws[7];
+        WHILE *ptr; //int     *ptr;
 
         ws.symbol_idx = local_table_index;
         ws.stack_pointer = stkp;
@@ -323,7 +323,7 @@ docase() {
  * "default" label
  */
 dodefault() {
-        while_table_t *ptr; //int     *ptr,
+        WHILE *ptr; //int     *ptr,
         int        lab;
 
         if (ptr = readswitch ()) {
@@ -348,7 +348,7 @@ doreturn() {
  * "break" statement
  */
 dobreak() {
-        while_table_t *ptr; //int     *ptr;
+        WHILE *ptr; //int     *ptr;
 
         if ((ptr = readwhile ()) == 0)
                 return;
@@ -360,7 +360,7 @@ dobreak() {
  * "continue" statement
  */
 docont() {
-        while_table_t *ptr; //int     *ptr;
+        WHILE *ptr; //int     *ptr;
 
         if ((ptr = findwhile ()) == 0)
                 return;
@@ -374,7 +374,7 @@ docont() {
 /**
  * dump switch table
  */
-dumpsw(while_table_t *ws) {
+dumpsw(WHILE *ws) {
 //int     ws[];
         int     i,j;
 

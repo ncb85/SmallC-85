@@ -40,13 +40,15 @@
 #define NAMESIZE        33
 #define NAMEMAX         32
 
-typedef struct symbol_table {
+struct symbol {
 	char name[NAMESIZE];	// symbol name
 	int identity;           // variable, array, pointer, function
 	int type;               // char, int
 	int storage;		// public, auto, extern, static, lstatic, defauto
 	int offset;		// offset
-} symbol_table_t;
+};
+#define SYMBOL struct symbol
+
 #define NUMBER_OF_GLOBALS 450
 #define NUMBER_OF_LOCALS 50
 
@@ -93,7 +95,7 @@ typedef struct symbol_table {
 #define WSTAB   5
 #define WSEXIT  6
 
-typedef struct while_table {
+struct while_rec {
 	int symbol_idx;		// symbol table address
 	int stack_pointer;	// stack pointer
 	int type;               // type
@@ -101,7 +103,8 @@ typedef struct while_table {
 	int incr_def;		// continue label ?
 	int body_tab;		// body of loop, switch ?
 	int while_exit;         // exit label
-} while_table_t;
+};
+#define WHILE struct while_rec
 
 /* possible entries for "wstyp" */
 #define WSWHILE 0
@@ -113,7 +116,7 @@ typedef struct while_table {
 #define SWSTSZ  100
 
 /* literal pool */
-#define LITABSZ 2000
+#define LITABSZ 5000
 #define LITMAX  LITABSZ-1
 
 /* input line */
@@ -146,7 +149,7 @@ typedef struct while_table {
 #define DE_REG 2
 
 typedef struct lvalue {
-	symbol_table_t *symbol;		// symbol table address, or 0 for constant
+	SYMBOL *symbol;		// symbol table address, or 0 for constant
 	int indirect;		// type of indirect object, 0 for static object
 	int ptr_type;		// type of pointer or array, 0 for other idents
 } lvalue_t;
@@ -195,27 +198,27 @@ int add_global (char sname[], int id, int typ, int value, int stor);
  */
 int add_local (char sname[], int id, int typ, int value, int stclass);
 
-while_table_t *readwhile();
-while_table_t *findwhile();
-while_table_t *readswitch();
+WHILE *readwhile();
+WHILE *findwhile();
+WHILE *readswitch();
 
 /**
  * Output the variable symbol at scptr as an extrn or a public
  * @param scptr
  */
-void ppubext(symbol_table_t *scptr);
+void ppubext(SYMBOL *scptr);
 
 /**
  * Output the function symbol at scptr as an extrn or a public
  * @param scptr
  */
-void fpubext(symbol_table_t *scptr);
+void fpubext(SYMBOL *scptr);
 
 /**
  * fetch a static memory cell into the primary register
  * @param sym
  */
-void gen_get_memory (symbol_table_t *sym);
+void gen_get_memory (SYMBOL *sym);
 
 /**
  * fetch the specified object type indirect through the primary
@@ -228,13 +231,13 @@ void gen_get_indirect(char typeobj, int reg);
  * asm - fetch the address of the specified symbol into the primary register
  * @param sym the symbol name
  */
-int gen_get_location (symbol_table_t *sym);
+int gen_get_location (SYMBOL *sym);
 
 /**
  * asm - store the primary register into the specified static memory cell
  * @param sym
  */
-void gen_put_memory (symbol_table_t *sym);
+void gen_put_memory (SYMBOL *sym);
 
 // intialisation of global variables
 #define INIT_TYPE    NAMESIZE

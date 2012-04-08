@@ -7,7 +7,7 @@
 #include "defs.h"
 #include "data.h"
 
-addwhile (while_table_t *ptr) {
+addwhile (WHILE *ptr) {
 //int     ptr[];
     //int     k;
 
@@ -29,7 +29,7 @@ delwhile () {
     }
 }
 
-while_table_t *readwhile () {
+WHILE *readwhile () {
     if (while_table_index == 0) {
     //if (wsptr == ws) {
         error ("no active do/for/while/switch");
@@ -40,7 +40,7 @@ while_table_t *readwhile () {
     }
 }
 
-while_table_t *findwhile () {
+WHILE *findwhile () {
     //int     *ptr;
 
     //for (ptr = wsptr; ptr != ws;) {
@@ -56,8 +56,8 @@ while_table_t *findwhile () {
     return (0);
 }
 
-while_table_t *readswitch () {
-    while_table_t *ptr; //int     *ptr;
+WHILE *readswitch () {
+    WHILE *ptr; //int     *ptr;
 
     if (ptr = readwhile ()) {
         //if (ptr[WSTYP] == WSSWITCH)
