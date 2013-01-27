@@ -1,12 +1,11 @@
 /*      File data.h: 2.2 (84/11/27,16:26:11) */
 
 /* storage words */
-
-extern SYMBOL symbol_table[NUMBER_OF_GLOBALS + NUMBER_OF_LOCALS]; //extern  char    symtab[];
-extern int global_table_index, rglobal_table_index; //extern  char    *glbptr, *rglbptr, *locptr;
+extern SYMBOL symbol_table[NUMBER_OF_GLOBALS + NUMBER_OF_LOCALS];
+extern int global_table_index, rglobal_table_index;
 extern int local_table_index;
-extern  WHILE ws[]; //int     ws[];
-extern  int     while_table_index; //*wsptr;
+extern  WHILE ws[];
+extern  int     while_table_index;
 extern  int     swstcase[];
 extern  int     swstlab[];
 extern  int     swstp;
@@ -18,8 +17,13 @@ extern  char    line[];
 extern  char    mline[];
 extern  int     lptr, mptr;
 
-/* miscellaneous storage */
+extern TAG_SYMBOL  tag_table[NUMTAG]; // start of structure tag table
+extern int	   tag_table_index;   // ptr to next entry
 
+extern SYMBOL	member_table[NUMMEMB];	// structure member table
+extern int	member_table_index;	// ptr to next member<
+
+/* miscellaneous storage */
 extern  int     nxtlab,
                 litlab,
                 stkp,
@@ -46,7 +50,8 @@ extern  int     sflag;
 extern  int     cflag;
 extern  int     errs;
 extern  int     aflag;
-extern  int     uflag;
+extern  int     uflag;  // undocumented 8085 instructions
 
-extern char initials_table[INITIALS_SIZE];      // 5kB space for initialisation data
-extern char *initials_table_ptr;
+extern INITIALS initials_table[NUMBER_OF_GLOBALS];
+extern char initials_data_table[INITIALS_SIZE];      // 5kB space for initialisation data
+extern int initials_idx, initials_data_idx;

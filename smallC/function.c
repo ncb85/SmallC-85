@@ -24,7 +24,7 @@ newfunc() {
         kill();
         return;
     }
-    if (idx = findglb(n)) {
+    if ((idx = find_global(n)) > -1) {
         if (symbol_table[idx].identity != FUNCTION)
             multidef(n);
         else if (symbol_table[idx].offset == FUNCTION)
@@ -45,7 +45,7 @@ newfunc() {
         // K&R style argument declaration
         while (!match(")")) {
             if (symname(n)) {
-                if (findloc(n))
+                if (find_locale(n) > -1)
                     multidef(n);
                 else {
                     add_local(n, 0, 0, argstk, AUTO);
@@ -114,7 +114,7 @@ getarg(int t) {
             j = POINTER;
         }
         if (legalname) {
-            if (argptr = findloc(n)) {
+            if ((argptr = find_locale(n)) > -1) {
                 symbol_table[argptr].identity = j;
                 symbol_table[argptr].type = t;
                 address = argtop - symbol_table[argptr].offset;
@@ -166,7 +166,7 @@ doLocalAnsiArgument(int type) {
         identity = VARIABLE;
     }
     if (symname(symbol_name)) {
-        if (findloc(symbol_name)) {
+        if (find_locale(symbol_name) > -1) {
             multidef(symbol_name);
         } else {
             argptr = add_local (symbol_name, identity, type, 0, AUTO);

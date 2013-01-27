@@ -10,19 +10,20 @@ TARGDIR = /home/notebook/Public/work/smallCextended/lib
 INCDIR = "./includes/"
 
 INSTFLAGS = -DINCDIR=$(INCDIR)
-   CFLAGS = '$(INSTFLAGS)' -O -ggdb -g
+   CFLAGS = '$(INSTFLAGS)' -ggdb -g
 
 ifdef SystemRoot
    # windows
-   CFLAGS = '$(INSTFLAGS)' -O
+   CFLAGS = '$(INSTFLAGS)'
 else
    ifeq ($(shell uname), Linux)
-       CFLAGS = '$(INSTFLAGS)' -O
+       CFLAGS = '$(INSTFLAGS)'
    endif
 endif
 
-SRC = initialise.c data.c error.c expr.c function.c gen.c io.c lex.c main.c preproc.c \
-      primary.c stmt.c sym.c while.c code8080.c
+SRC = initials.c data.c error.c expr.c function.c gen.c io.c lex.c main.c preproc.c \
+      primary.c stmt.c sym.c while.c code8080.c struct.c
+
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 
 all:    scc8080

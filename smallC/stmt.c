@@ -16,36 +16,36 @@
  * @return statement type
  */
 statement (int func) {
-        if ((ch () == 0) & feof (input))
-                return (0);
-        lastst = 0;
-        if (func)
-                if (match ("{")) {
-                        do_compound (YES);
-                        return (lastst);
-                } else
-                        error ("function requires compound statement");
-        if (match ("{"))
-                do_compound (NO);
-        else
-                do_statement ();
-        return (lastst);
+    if ((ch () == 0) & feof (input))
+        return (0);
+    lastst = 0;
+    if (func)
+        if (match ("{")) {
+            do_compound (YES);
+            return (lastst);
+        } else
+            error ("function requires compound statement");
+    if (match ("{"))
+        do_compound (NO);
+    else
+        do_statement ();
+    return (lastst);
 }
 
 /**
  * declaration
  */
 statement_declare() {
-        if (amatch("register", 8))
-                do_local_declares(DEFAUTO);
-        else if (amatch("auto", 4))
-                do_local_declares(DEFAUTO);
-        else if (amatch("static", 6))
-                do_local_declares(LSTATIC);
-        else if (do_local_declares(AUTO)) ;
-        else
-                return (NO);
-        return (YES);
+    if (amatch("register", 8))
+        do_local_declares(DEFAUTO);
+    else if (amatch("auto", 4))
+        do_local_declares(DEFAUTO);
+    else if (amatch("static", 6))
+        do_local_declares(LSTATIC);
+    else if (do_local_declares(AUTO)) ;
+    else
+        return (NO);
+    return (YES);
 }
 
 /**
@@ -54,74 +54,85 @@ statement_declare() {
  * @return 
  */
 do_local_declares(int stclass) {
-        int type = 0;
-        blanks();
-        if (type = get_type()) {
-            declare_local(type, stclass);
-        } else if (stclass == LSTATIC || stclass == DEFAUTO) {
-            declare_local(CINT, stclass);
-        } else {
-            return(0);
+    int type = 0;
+    int otag;   // tag of struct object being declared
+    int sflag;  // TRUE for struct definition, zero for union
+    char sname[NAMESIZE];
+    blanks();
+    if ((sflag=amatch("struct", 6)) || amatch("union", 5)) {
+        if (symname(sname) == 0) { // legal name ?
+            illname();
         }
-        need_semicolon();
-        return(1);
+        if ((otag=find_tag(sname)) == -1) { // structure not previously defined
+            otag = define_struct(sname, stclass, sflag);
+        }
+        declare_local(STRUCT, stclass, otag);
+    } else if (type = get_type()) {
+        declare_local(type, stclass, -1);
+    } else if (stclass == LSTATIC || stclass == DEFAUTO) {
+        declare_local(CINT, stclass, -1);
+    } else {
+        return(0);
+    }
+    need_semicolon();
+    return(1);
 }
 
 /**
  * non-declaration statement
  */
 do_statement () {
-        if (amatch ("if", 2)) {
-                doif ();
-                lastst = STIF;
-        } else if (amatch ("while", 5)) {
-                dowhile ();
-                lastst = STWHILE;
-        } else if (amatch ("switch", 6)) {
-                doswitch ();
-                lastst = STSWITCH;
-        } else if (amatch ("do", 2)) {
-                dodo ();
-                need_semicolon ();
-                lastst = STDO;
-        } else if (amatch ("for", 3)) {
-                dofor ();
-                lastst = STFOR;
-        } else if (amatch ("return", 6)) {
-                doreturn ();
-                need_semicolon ();
-                lastst = STRETURN;
-        } else if (amatch ("break", 5)) {
-                dobreak ();
-                need_semicolon ();
-                lastst = STBREAK;
-        } else if (amatch ("continue", 8)) {
-                docont ();
-                need_semicolon ();
-                lastst = STCONT;
-        } else if (match (";"))
-                ;
-        else if (amatch ("case", 4)) {
-                docase ();
-                lastst = statement (NO);
-        } else if (amatch ("default", 7)) {
-                dodefault ();
-                lastst = statement (NO);
-        } else if (match ("#asm")) {
-                doasm ();
-                lastst = STASM;
-        } else if (match ("{"))
-                do_compound (NO);
-        else {
-                expression (YES);
-/*              if (match (":")) {
-                        dolabel ();
-                        lastst = statement (NO);
-                } else {
-*/                      need_semicolon ();
-                        lastst = STEXP;
-/*              }
-*/      }
+    if (amatch ("if", 2)) {
+        doif ();
+        lastst = STIF;
+    } else if (amatch ("while", 5)) {
+        dowhile ();
+        lastst = STWHILE;
+    } else if (amatch ("switch", 6)) {
+        doswitch ();
+        lastst = STSWITCH;
+    } else if (amatch ("do", 2)) {
+        dodo ();
+        need_semicolon ();
+        lastst = STDO;
+    } else if (amatch ("for", 3)) {
+        dofor ();
+        lastst = STFOR;
+    } else if (amatch ("return", 6)) {
+        doreturn ();
+        need_semicolon ();
+        lastst = STRETURN;
+    } else if (amatch ("break", 5)) {
+        dobreak ();
+        need_semicolon ();
+        lastst = STBREAK;
+    } else if (amatch ("continue", 8)) {
+        docont ();
+        need_semicolon ();
+        lastst = STCONT;
+    } else if (match (";"))
+        ;
+    else if (amatch ("case", 4)) {
+        docase ();
+        lastst = statement (NO);
+    } else if (amatch ("default", 7)) {
+        dodefault ();
+        lastst = statement (NO);
+    } else if (match ("#asm")) {
+        doasm ();
+        lastst = STASM;
+    } else if (match ("{"))
+        do_compound (NO);
+    else {
+        expression (YES);
+/*      if (match (":")) {
+            dolabel ();
+            lastst = statement (NO);
+        } else {
+*/          need_semicolon ();
+            lastst = STEXP;
+/*      }
+*/  }
 }
 
 /**
@@ -177,7 +188,7 @@ doif() {
  * "while" statement
  */
 dowhile() {
-        WHILE ws; //int     ws[7];
+        WHILE ws;
 
         ws.symbol_idx = local_table_index;
         ws.stack_pointer = stkp;
@@ -199,7 +210,7 @@ dowhile() {
  * "do" statement
  */
 dodo() {
-        WHILE ws; //int     ws[7];
+        WHILE ws;
 
         ws.symbol_idx = local_table_index;
         ws.stack_pointer = stkp;
@@ -226,7 +237,7 @@ dodo() {
  * "for" statement
  */
 dofor() {
-        WHILE ws; //int     ws[7],
+        WHILE ws;
         WHILE *pws;
 
         ws.symbol_idx = local_table_index;
@@ -271,8 +282,8 @@ dofor() {
  * "switch" statement
  */
 doswitch() {
-        WHILE ws; //int     ws[7];
-        WHILE *ptr; //int     *ptr;
+        WHILE ws;
+        WHILE *ptr;
 
         ws.symbol_idx = local_table_index;
         ws.stack_pointer = stkp;
@@ -323,7 +334,7 @@ docase() {
  * "default" label
  */
 dodefault() {
-        WHILE *ptr; //int     *ptr,
+        WHILE *ptr;
         int        lab;
 
         if (ptr = readswitch ()) {
@@ -348,7 +359,7 @@ doreturn() {
  * "break" statement
  */
 dobreak() {
-        WHILE *ptr; //int     *ptr;
+        WHILE *ptr;
 
         if ((ptr = readwhile ()) == 0)
                 return;
@@ -375,7 +386,6 @@ docont() {
  * dump switch table
  */
 dumpsw(WHILE *ws) {
-//int     ws[];
         int     i,j;
 
         data_segment_gdata ();

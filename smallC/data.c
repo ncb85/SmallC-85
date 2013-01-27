@@ -10,11 +10,8 @@
 SYMBOL symbol_table[NUMBER_OF_GLOBALS + NUMBER_OF_LOCALS];
 int global_table_index, rglobal_table_index;
 int local_table_index;
-//char    symtab[SYMTBSZ];
-//char    *glbptr, *rglbptr, *locptr;
 
-WHILE ws[WSTABSZ]; //int     ws[WSTABSZ];
-//while_table_t *wsptr; //int     *wsptr;
+WHILE ws[WSTABSZ];
 int     while_table_index;
 
 int     swstcase[SWSTSZ];
@@ -28,8 +25,13 @@ char    line[LINESIZE];
 char    mline[LINESIZE];
 int     lptr, mptr;
 
-/* miscellaneous storage */
+TAG_SYMBOL  tag_table[NUMTAG]; // start of structure tag table
+int         tag_table_index; // ptr to next entry
 
+SYMBOL	member_table[NUMMEMB];	// structure member table
+int	member_table_index;	// ptr to next member
+
+/* miscellaneous storage */
 int     nxtlab,
         litlab,
         stkp,
@@ -56,7 +58,8 @@ int     sflag;
 int     cflag;
 int     errs;
 int     aflag;
-int     uflag;
+int     uflag;  // undocumented 8085 instructions
 
-char initials_table[INITIALS_SIZE];      // 5kB space for initialisation data
-char *initials_table_ptr = 0;
+INITIALS initials_table[NUMBER_OF_GLOBALS];
+char initials_data_table[INITIALS_SIZE];      // 5kB space for initialisation data
+int initials_idx = 0, initials_data_idx = 0;

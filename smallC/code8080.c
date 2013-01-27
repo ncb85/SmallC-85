@@ -25,14 +25,14 @@
  * print all assembler info before any code is generated
  */
 void header () {
-        output_string ("; Small C 8080;\n;\tCoder (2.4,84/11/27)\n;");
-        frontend_version();
-        newline ();
-        output_line ("\t;program area SMALLC_GENERATED is RELOCATABLE");
-        output_line ("\t.area\tSMALLC_GENERATED\t(REL,CON)");
-        output_line ("\t.module SMALLC_GENERATED");
-        output_line ("\t.list   (err, loc, bin, eqt, cyc, lin, src, lst, md)");
-        output_line ("\t.nlist  (pag)");
+    output_string ("; Small C 8080\n;\tCoder (2.4,84/11/27)\n;");
+    frontend_version();
+    newline ();
+    output_line ("\t;program area SMALLC_GENERATED is RELOCATABLE");
+    output_line ("\t.area\tSMALLC_GENERATED\t(REL,CON)");
+    output_line ("\t.module SMALLC_GENERATED");
+    output_line ("\t.list   (err, loc, bin, eqt, cyc, lin, src, lst, md)");
+    output_line ("\t.nlist  (pag)");
 }
 
 /**
@@ -41,16 +41,16 @@ void header () {
  */
 newline () {
 #if __CYGWIN__ == 1
-        output_byte (CR);
+    output_byte (CR);
 #endif
-        output_byte (LF);
+    output_byte (LF);
 }
 
 void initmac() {
-        //defmac("cpm\t1");
-        defmac("I8080\t1");
-        defmac("RMAC\t1");
-        defmac("smallc\t1");
+    //defmac("cpm\t1");
+    defmac("I8080\t1");
+    defmac("RMAC\t1");
+    defmac("smallc\t1");
 }
 
 /**
@@ -78,7 +78,7 @@ void gen_comment() {
  * print any assembler stuff needed after all code
  */
 void trailer() {
-        output_line (";\t.end");
+    output_line (";\t.end");
 }
 
 /**
@@ -100,10 +100,10 @@ void data_segment_gdata() {
  * @param scptr
  */
 void ppubext(SYMBOL *scptr)  {
-        if (symbol_table[current_symbol_table_idx].storage == STATIC) return;
-        output_with_tab (scptr->storage == EXTERN ? ";extrn\t" : ".globl\t");
-        output_string (scptr->name);
-        newline();
+    if (symbol_table[current_symbol_table_idx].storage == STATIC) return;
+    output_with_tab (scptr->storage == EXTERN ? ";extrn\t" : ".globl\t");
+    output_string (scptr->name);
+    newline();
 }
 
 /**
@@ -111,10 +111,10 @@ void ppubext(SYMBOL *scptr)  {
  * @param scptr
  */
 void fpubext(SYMBOL *scptr) {
-        if (scptr->storage == STATIC) return;
-        output_with_tab (scptr->offset == FUNCTION ? ".globl\t" : ";extrn\t");
-        output_string (scptr->name);
-        newline ();
+    if (scptr->storage == STATIC) return;
+    output_with_tab (scptr->offset == FUNCTION ? ".globl\t" : ";extrn\t");
+    output_string (scptr->name);
+    newline ();
 }
 
 /**
@@ -141,7 +141,7 @@ void gen_get_memory(SYMBOL *sym) {
         output_string(sym->name);
         newline();
         output_line("mov \tl,a");
-        output_line("mvi \th,0");
+        output_line("mvi \th,#0");
     } else {
         output_with_tab ("lhld\t");
         output_string (sym->name);
@@ -154,16 +154,7 @@ void gen_get_memory(SYMBOL *sym) {
  * @param sym the symbol name
  * @return which register pair contains result
  */
-int gen_get_location(SYMBOL *sym) {
-        /*gen_immediate ();
-        if (sym->storage == LSTATIC) {
-            print_label(sym->offset);
-            newline();
-        } else {
-                output_number (sym->offset - stkp);
-                newline ();
-                output_line ("dad\tsp");
-        }*/
+int gen_get_locale(SYMBOL *sym) {
     if (sym->storage == LSTATIC) {
         gen_immediate();
         print_label(sym->offset);
@@ -174,7 +165,6 @@ int gen_get_location(SYMBOL *sym) {
             output_with_tab("ldsi\t");
             output_number(sym->offset - stkp);
             newline ();
-            //gen_swap();
             return DE_REG;
         } else {
             gen_immediate();
@@ -286,15 +276,15 @@ gen_push(int reg) {
  * pop the top of the stack into the secondary register
  */
 gen_pop() {
-        output_line ("pop \td");
-        stkp = stkp + INTSIZE;
+    output_line ("pop \td");
+    stkp = stkp + INTSIZE;
 }
 
 /**
  * swap the primary register and the top of the stack
  */
 gen_swap_stack() {
-        output_line ("xthl");
+    output_line ("xthl");
 }
 
 /**
@@ -302,9 +292,9 @@ gen_swap_stack() {
  * @param sname subroutine name
  */
 gen_call(char *sname) {
-        output_with_tab ("call\t");
-        output_string (sname);
-        newline ();
+    output_with_tab ("call\t");
+    output_string (sname);
+    newline ();
 }
 
 /**
@@ -320,19 +310,19 @@ declare_entry_point(char *symbol_name) {
  * return from subroutine
  */
 gen_ret() {
-        output_line ("ret");
+    output_line ("ret");
 }
 
 /**
  * perform subroutine call to value on top of stack
  */
 callstk() {
-        gen_immediate ();
-        output_string ("#.+5");
-        newline ();
-        gen_swap_stack ();
-        output_line ("pchl");
-        stkp = stkp + INTSIZE;
+    gen_immediate ();
+    output_string ("#.+5");
+    newline ();
+    gen_swap_stack ();
+    output_line ("pchl");
+    stkp = stkp + INTSIZE;
 }
 
 /**
@@ -392,70 +382,70 @@ gen_def_word() {
  * @param newstkp new value
  */
 gen_modify_stack(int newstkp) {
-        int k;
+    int k;
 
-        k = newstkp - stkp;
-        if (k == 0)
-                return (newstkp);
-        if (k > 0) {
-                if (k < 7) {
-                        if (k & 1) {
-                                output_line ("inx \tsp");
-                                k--;
-                        }
-                        while (k) {
-                                output_line ("pop \tb");
-                                k = k - INTSIZE;
-                        }
-                        return (newstkp);
-                }
-        } else {
-                if (k > -7) {
-                        if (k & 1) {
-                                output_line ("dcx \tsp");
-                                k++;
-                        }
-                        while (k) {
-                                output_line ("push\tb");
-                                k = k + INTSIZE;
-                        }
-                        return (newstkp);
-                }
-        }
-        gen_swap ();
-        gen_immediate ();
-        output_number (k);
-        newline ();
-        output_line ("dad \tsp");
-        output_line ("sphl");
-        gen_swap ();
+    k = newstkp - stkp;
+    if (k == 0)
         return (newstkp);
+    if (k > 0) {
+        if (k < 7) {
+            if (k & 1) {
+                output_line ("inx \tsp");
+                k--;
+            }
+            while (k) {
+                output_line ("pop \tb");
+                k = k - INTSIZE;
+            }
+            return (newstkp);
+        }
+    } else {
+        if (k > -7) {
+            if (k & 1) {
+                output_line ("dcx \tsp");
+                k++;
+            }
+            while (k) {
+                output_line ("push\tb");
+                k = k + INTSIZE;
+            }
+            return (newstkp);
+        }
+    }
+    gen_swap ();
+    gen_immediate ();
+    output_number (k);
+    newline ();
+    output_line ("dad \tsp");
+    output_line ("sphl");
+    gen_swap ();
+    return (newstkp);
 }
 
 /**
  * multiply the primary register by INTSIZE
  */
 gen_multiply_by_two() {
-        output_line ("dad \th");
+    output_line ("dad \th");
 }
 
 /**
  * divide the primary register by INTSIZE, never used
  */
 gen_divide_by_two() {
-        gen_push(HL_REG);        /* push primary in prep for gasr */
-        gen_immediate ();
-        output_number (1);
-        newline ();
-        gen_arithm_shift_right ();  /* divide by two */
+    gen_push(HL_REG);        /* push primary in prep for gasr */
+    gen_immediate ();
+    output_number (1);
+    newline ();
+    gen_arithm_shift_right ();  /* divide by two */
 }
 
 /**
  * Case jump instruction
  */
 gen_jump_case() {
-        output_with_tab ("jmp \tcccase");
-        newline ();
+    output_with_tab ("jmp \tcccase");
+    newline ();
 }
 
 /**
@@ -486,8 +476,8 @@ gen_sub() {
  * multiply the primary and secondary registers (result in primary)
  */
 gen_mult() {
-        gen_pop();
-        gen_call ("ccmul");
+    gen_pop();
+    gen_call ("ccmul");
 }
 
 /**
@@ -495,8 +485,8 @@ gen_mult() {
  * (quotient in primary, remainder in secondary)
  */
 gen_div() {
-        gen_pop();
-        gen_call ("ccdiv");
+    gen_pop();
+    gen_call ("ccdiv");
 }
 
 /**
@@ -504,8 +494,8 @@ gen_div() {
  * (quotient in primary, remainder in secondary)
  */
 gen_udiv() {
-        gen_pop();
-        gen_call ("ccudiv");
+    gen_pop();
+    gen_call ("ccudiv");
 }
 
 /**
@@ -514,8 +504,8 @@ gen_udiv() {
  * (remainder in primary, quotient in secondary)
  */
 gen_mod() {
-        gen_div ();
-        gen_swap ();
+    gen_div ();
+    gen_swap ();
 }
 
 /**
@@ -524,32 +514,32 @@ gen_mod() {
  * (remainder in primary, quotient in secondary)
  */
 gen_umod() {
-        gen_udiv ();
-        gen_swap ();
+    gen_udiv ();
+    gen_swap ();
 }
 
 /**
  * inclusive 'or' the primary and secondary registers
  */
 gen_or() {
-        gen_pop();
-        gen_call ("ccor");
+    gen_pop();
+    gen_call ("ccor");
 }
 
 /**
  * exclusive 'or' the primary and secondary registers
  */
 gen_xor() {
-        gen_pop();
-        gen_call ("ccxor");
+    gen_pop();
+    gen_call ("ccxor");
 }
 
 /**
  * 'and' the primary and secondary registers
  */
 gen_and() {
-        gen_pop();
-        gen_call ("ccand");
+    gen_pop();
+    gen_call ("ccand");
 }
 
 /**
@@ -557,8 +547,8 @@ gen_and() {
  * times in the primary register (results in primary register)
  */
 gen_arithm_shift_right() {
-        gen_pop();
-        gen_call ("ccasr");
+    gen_pop();
+    gen_call ("ccasr");
 }
 
 /**
@@ -566,54 +556,87 @@ gen_arithm_shift_right() {
  * times in the primary register (results in primary register)
  */
 gen_arithm_shift_left() {
-        gen_pop ();
-        gen_call ("ccasl");
+    gen_pop ();
+    gen_call ("ccasl");
 }
 
 /**
  * two's complement of primary register
  */
 gen_twos_complement() {
-        gen_call ("ccneg");
+    gen_call ("ccneg");
 }
 
 /**
  * logical complement of primary register
  */
 gen_logical_negation() {
-        gen_call ("cclneg");
+    gen_call ("cclneg");
 }
 
 /**
  * one's complement of primary register
  */
 gen_complement() {
-        gen_call ("cccom");
+    gen_call ("cccom");
 }
 
 /**
  * Convert primary value into logical value (0 if 0, 1 otherwise)
  */
 gen_convert_primary_reg_value_to_bool() {
-        gen_call ("ccbool");
+    gen_call ("ccbool");
 }
 
 /**
  * increment the primary register by 1 if char, INTSIZE if int
  */
-gen_increment_primary_reg(lvalue_t *lval) {
-        output_line ("inx \th");
-        if (lval->ptr_type & CINT)
-                output_line ("inx \th");
+gen_increment_primary_reg(LVALUE *lval) {
+    output_line("inx \th");
+    switch (lval->ptr_type) {
+        case CINT:
+        case UINT:
+            output_line("inx \th");
+            break;
+        case STRUCT:
+            gen_immediate2();
+            output_number(lval->tagsym->size - 1);
+            newline();
+            output_line("dad \td");
+            break ;
+        default:
+            break;
+    }
 }
 
 /**
  * decrement the primary register by one if char, INTSIZE if int
  */
-gen_decrement_primary_reg(lvalue_t *lval) {
-        output_line ("dcx \th");
-        if (lval->ptr_type & CINT)
-                output_line("dcx \th");
+gen_decrement_primary_reg(LVALUE *lval) {
+    output_line("dcx \th");
+    switch (lval->ptr_type) {
+        case CINT:
+        case UINT:
+            output_line("dcx \th");
+            break;
+        case STRUCT:
+            gen_immediate2();
+            output_number(lval->tagsym->size - 1);
+            newline();
+            // two's complement
+            output_line("mov  \ta,d");
+            output_line("cma");
+            output_line("mov  \td,a");
+            output_line("mov  \ta,e");
+            output_line("cma");
+            output_line("mov \te,a");
+            output_line("inx \td");
+            // substract
+            output_line("dad \td");
+            break ;
+        default:
+            break;
+    }
 }
 
 /*
@@ -628,80 +651,80 @@ gen_decrement_primary_reg(lvalue_t *lval) {
  * equal
  */
 gen_equal() {
-        gen_pop();
-        gen_call ("cceq");
+    gen_pop();
+    gen_call ("cceq");
 }
 
 /**
  * not equal
  */
 gen_not_equal() {
-        gen_pop();
-        gen_call ("ccne");
+    gen_pop();
+    gen_call ("ccne");
 }
 
 /**
  * less than (signed)
  */
 gen_less_than() {
-        gen_pop();
-        gen_call ("cclt");
+    gen_pop();
+    gen_call ("cclt");
 }
 
 /**
  * less than or equal (signed)
  */
 gen_less_or_equal() {
-        gen_pop();
-        gen_call ("ccle");
+    gen_pop();
+    gen_call ("ccle");
 }
 
 /**
  * greater than (signed)
  */
 gen_greater_than() {
-        gen_pop();
-        gen_call ("ccgt");
+    gen_pop();
+    gen_call ("ccgt");
 }
 
 /**
  * greater than or equal (signed)
  */
 gen_greater_or_equal() {
-        gen_pop();
-        gen_call ("ccge");
+    gen_pop();
+    gen_call ("ccge");
 }
 
 /**
  * less than (unsigned)
  */
 gen_unsigned_less_than() {
-        gen_pop();
-        gen_call ("ccult");
+    gen_pop();
+    gen_call ("ccult");
 }
 
 /**
  * less than or equal (unsigned)
  */
 gen_unsigned_less_or_equal() {
-        gen_pop();
-        gen_call ("ccule");
+    gen_pop();
+    gen_call ("ccule");
 }
 
 /**
  * greater than (unsigned)
  */
 gen_usigned_greater_than() {
-        gen_pop();
-        gen_call ("ccugt");
+    gen_pop();
+    gen_call ("ccugt");
 }
 
 /**
  * greater than or equal (unsigned)
  */
 gen_unsigned_greater_or_equal() {
-        gen_pop();
-        gen_call ("ccuge");
+    gen_pop();
+    gen_call ("ccuge");
 }
 
 char *inclib() {
@@ -723,9 +746,9 @@ char *inclib() {
  */
 gnargs(d)
 int     d; {
-        output_with_tab ("mvi \ta,");
-        output_number(d);
-        newline ();
+    output_with_tab ("mvi \ta,");
+    output_number(d);
+    newline ();
 }
 
 int assemble(s)
@@ -749,5 +772,46 @@ int link() {
 #else
         return(0);
 #endif
+}
+
+/**
+ * print partial instruction to get an immediate value into
+ * the secondary register
+ */
+gen_immediate2() {
+    output_with_tab ("lxi \td,");
+}
+
+/**
+ * add offset to primary register
+ * @param val the value
+ */
+add_offset(int val) {
+    gen_immediate2();
+    output_number(val);
+    newline();
+    output_line ("dad \td");
+}
+
+/**
+ * multiply the primary register by the length of some variable
+ * @param type
+ * @param size
+ */
+gen_multiply(int type, int size) {
+	switch (type) {
+        case CINT:
+        case UINT:
+            gen_multiply_by_two();
+            break;
+        case STRUCT:
+            gen_immediate2();
+            output_number(size);
+            newline();
+            gen_call("ccmul");
+            break ;
+        default:
+            break;
+    }
 }
 

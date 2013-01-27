@@ -16,6 +16,9 @@ main(int argc, char *argv[]) {
     errs = 0;
     aflag = 1;
     uflag = 0;
+    
+    setbuf(stdout, NULL); // disable stdout buffering
+    
     for (i=1; i<argc; i++) {
         param = argv[i];
         if (*param == '-') {
@@ -83,9 +86,10 @@ main(int argc, char *argv[]) {
  */
 compile(char *file) {
     if (file == NULL || filename_typeof(file) == 'c') {
-        global_table_index = 1; //glbptr = STARTGLB;
+        global_table_index = 0; //glbptr = STARTGLB;
         local_table_index = NUMBER_OF_GLOBALS; //locptr = STARTLOC;
         while_table_index = 0; //wsptr = ws;
+        tag_table_index = 0;
         inclsp =
         iflevel =
         skiplevel =
@@ -111,7 +115,6 @@ compile(char *file) {
         //add_global("edata", ARRAY, CCHAR, 0, EXTERN);
         defmac("short\tint");
         initmac();
-        create_initials();
         // compiler body
         if (file == NULL) {
             input = stdin;
@@ -149,6 +152,7 @@ compile(char *file) {
 
 frontend_version() {
     output_string("\tFront End (2.7,84/11/28)");
+    output_string("\n;\tFront End for ASXXXX (2.8,13/01/20)");
 }
 
 /**
@@ -160,7 +164,7 @@ usage() {
     fputs("-t: output c source as asm comments\n", stderr);
     fputs("-a: no argument count in A to function calls\n", stderr);
     fputs("-d: define macro\n", stderr);
-    fputs("-u: use undocumented 8085 instructions\n", stderr);
+    fputs("-u: use undocumented 8085 instructions LDSI, LHLX, SHLX\n", stderr);
     fputs("-s: assemble generated output, not implemented\n", stderr);
     fputs("-c: link, not implemented\n", stderr);
     fputs("-h: displays usage\n", stderr);
@@ -176,10 +180,10 @@ usage() {
 parse() {
     while (!feof(input)) {
         if (amatch("extern", 6))
-            dodcls(EXTERN);
+            do_declarations(EXTERN, NULL_TAG, 0);
         else if (amatch("static", 6))
-            dodcls(STATIC);
-        else if (dodcls(PUBLIC));
+            do_declarations(STATIC, NULL_TAG, 0);
+        else if (do_declarations(PUBLIC, NULL_TAG, 0));
         else if (match("#asm"))
             doasm();
         else if (match("#include"))
@@ -198,18 +202,32 @@ parse() {
 
 /**
  * parse top level declarations
- * @param stclass
+ * @param stclass storage
+ * @param mtag
+ * @param is_struct
  * @return 
  */
-dodcls(int stclass) {
+do_declarations(int stclass, TAG_SYMBOL *mtag, int is_struct) {
     int type;
+    int otag;   // tag of struct object being declared
+    int sflag;		// TRUE for struct definition, zero for union
+    char sname[NAMESIZE];
+    
     blanks();
-    if (type = get_type()) {
-        declare_global(type, stclass);
+    if ((sflag=amatch("struct", 6)) || amatch("union", 5)) {
+        if (symname(sname) == 0) { // legal name ?
+            illname();
+        }
+        if ((otag=find_tag(sname)) == -1) { // structure not previously defined
+            otag = define_struct(sname, stclass, sflag);
+        }
+        declare_global(STRUCT, stclass, mtag, otag, is_struct);
+    } else if (type = get_type()) {
+        declare_global(type, stclass, mtag, NULL_TAG, is_struct);
     } else if (stclass == PUBLIC) {
         return (0);
     } else {
-        declare_global(CINT, stclass);
+        declare_global(CINT, stclass, mtag, NULL_TAG, is_struct);
     }
     need_semicolon();
     return (1);
@@ -259,35 +277,39 @@ dumpglbs() {
                 dim = symbol->offset;
                 list_size = 0;
                 line_count = 0;
-                if (find_symbol(symbol->name)) { // has initials
+                if (find_symbol_initials(symbol->name)) { // has initials
                     list_size = get_size(symbol->name);
                     if (dim == -1) {
                         dim = list_size;
                     }
                 }
                 for (i=0; i<dim; i++) {
-                    if (line_count % 10 == 0) {
-                        newline();
-                        if ((symbol->type & CINT) || (symbol->identity == POINTER)) {
-                            gen_def_word();
-                        } else {
-                            gen_def_byte();
+                    if (symbol->type == STRUCT) {
+                        dump_struct(symbol, i);
+                    } else {
+                        if (line_count % 10 == 0) {
+                            newline();
+                            if ((symbol->type & CINT) || (symbol->identity == POINTER)) {
+                                gen_def_word();
+                            } else {
+                                gen_def_byte();
+                            }
                         }
-                    }
-                    if (i < list_size) {
-                        // dump data
-                        value = get_item_at(symbol->name, i);
-                        output_number(value);
-                    } else {
-                        // dump zero, no more data available
-                        output_number(0);
-                    }
-                    line_count++;
-                    if (line_count % 10 == 0) {
-                        line_count = 0;
-                    } else {
-                        if (i < dim-1) {
-                            output_byte( ',' );
+                        if (i < list_size) {
+                            // dump data
+                            value = get_item_at(symbol->name, i, &tag_table[symbol->tagidx]);
+                            output_number(value);
+                        } else {
+                            // dump zero, no more data available
+                            output_number(0);
+                        }
+                        line_count++;
+                        if (line_count % 10 == 0) {
+                            line_count = 0;
+                        } else {
+                            if (i < dim-1) {
+                                output_byte( ',' );
+                            }
                         }
                     }
                 }
@@ -300,8 +322,37 @@ dumpglbs() {
     }
 }
 
-/*
- *      report errors
+/**
+ * dump struct data
+ * @param symbol struct variable
+ * @param position position of the struct in the array, or zero
+ */
+dump_struct(SYMBOL *symbol, int position) {
+    int i, number_of_members, value;
+    number_of_members = tag_table[symbol->tagidx].number_of_members;
+    newline();
+    for (i=0; i<number_of_members; i++) {
+        // i is the index of current member, get type
+        int member_type = member_table[tag_table[symbol->tagidx].member_idx + i].type;
+        if (member_type & CINT) {
+            gen_def_word();
+        } else {
+            gen_def_byte();
+        }
+        if (position < get_size(symbol->name)) {
+            // dump data
+            value = get_item_at(symbol->name, position*number_of_members+i, &tag_table[symbol->tagidx]);
+            output_number(value);
+        } else {
+            // dump zero, no more data available
+            output_number(0);
+        }
+        newline();
+    }
+}
+
+/**
+ * report errors
  */
 errorsummary() {
     if (ncmp)
