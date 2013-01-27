@@ -15,7 +15,7 @@ Generated code is suitable for ASXXXX assembler/linker.
 ***** update *****
 Support for unsigned types
 Support for undocumented 8085 istructions LHLX, SHLX, LDSI, ARHL
-
+Support for structs and unions
 -------------------------- original posting ------------------------------
 
 Small C version C3.0R1.1
