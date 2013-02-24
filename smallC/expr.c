@@ -660,74 +660,75 @@ hier11(LVALUE *lval) {
     k = primary(lval);
     ptr = lval->symbol;
     blanks();
-    FOREVER {
-        if (match("[")) {
-            if (ptr == 0) {
-                error("can't subscript");
-                junk();
-                needbrack("]");
-                return (0);
-            } else if (ptr->identity == POINTER)
-                k = rvalue(lval, k);
-            else if (ptr->identity != ARRAY) {
-                error("can't subscript");
+    if ((ch () == '[') || (ch () == '(') || (ch () == '.') || ((ch () == '-') && (nch() == '>')))
+        FOREVER {
+            if (match("[")) {
+                if (ptr == 0) {
+                    error("can't subscript");
+                    junk();
+                    needbrack("]");
+                    return (0);
+                } else if (ptr->identity == POINTER)
+                    k = rvalue(lval, k);
+                else if (ptr->identity != ARRAY) {
+                    error("can't subscript");
+                    k = 0;
+                }
+                gen_push(k);
+                expression (YES);
+                needbrack ("]");
+                gen_multiply(ptr->type, tag_table[ptr->tagidx].size);
+                gen_add (NULL,NULL);
+                //lval->symbol = 0;
+                lval->indirect = ptr->type;
+                k = HL_REG;
+            } else if (match ("(")) {
+                if (ptr == 0)
+                    callfunction(0);
+                else if (ptr->identity != FUNCTION) {
+                    k = rvalue(lval, k);
+                    callfunction(0);
+                } else
+                    callfunction(ptr);
+                lval->symbol = 0;
                 k = 0;
+            } else if ((direct=match(".")) || match("->")) {
+                if (lval->tagsym == 0) {
+                    error("can't take member") ;
+                    junk() ;
+                    return 0 ;
+                }
+                if (symname(sname) == 0 ||
+                   ((ptr=find_member(lval->tagsym, sname)) == 0)) {
+                    error("unknown member") ;
+                    junk() ;
+                    return 0 ;
+                }
+                if (k && direct == 0)
+                    rvalue(lval);
+                add_offset(ptr->offset); // move pointer from struct begin to struct member
+                lval->symbol = ptr;
+                lval->indirect = ptr->type; // lval->indirect = lval->val_type = ptr->type
+                lval->ptr_type = 0;
+                lval->tagsym = NULL_TAG;
+                if (ptr->type == STRUCT)
+                    lval->tagsym = &tag_table[ptr->tagidx];
+                if (ptr->identity == POINTER) {
+                    lval->indirect = CINT;
+                    lval->ptr_type = ptr->type;
+                    //lval->val_type = CINT;
+                }
+                if (ptr->identity==ARRAY ||
+                    (ptr->type==STRUCT && ptr->identity==VARIABLE)) {
+                    // array or struct
+                    lval->ptr_type = ptr->type;
+                    //lval->val_type = CINT;
+                    k = 0;
+                }
+                else k = 1;
             }
-            gen_push(k);
-            expression (YES);
-            needbrack ("]");
-            gen_multiply(ptr->type, tag_table[ptr->tagidx].size);
-            gen_add (NULL,NULL);
-            //lval->symbol = 0;
-            lval->indirect = ptr->type;
-            k = HL_REG;
-        } else if (match ("(")) {
-            if (ptr == 0)
-                callfunction(0);
-            else if (ptr->identity != FUNCTION) {
-                k = rvalue(lval, k);
-                callfunction(0);
-            } else
-                callfunction(ptr);
-            lval->symbol = 0;
-            k = 0;
-        } else if ((direct=match(".")) || match("->")) {
-            if (lval->tagsym == 0) {
-                error("can't take member") ;
-                junk() ;
-                return 0 ;
-            }
-            if (symname(sname) == 0 ||
-               ((ptr=find_member(lval->tagsym, sname)) == 0)) {
-                error("unknown member") ;
-                junk() ;
-                return 0 ;
-            }
-            if (k && direct == 0)
-                rvalue(lval);
-            add_offset(ptr->offset); // move pointer from struct begin to struct member
-            lval->symbol = ptr;
-            lval->indirect = ptr->type; // lval->indirect = lval->val_type = ptr->type
-            lval->ptr_type = 0;
-            lval->tagsym = NULL_TAG;
-            if (ptr->type == STRUCT)
-                lval->tagsym = &tag_table[ptr->tagidx];
-            if (ptr->identity == POINTER) {
-                lval->indirect = CINT;
-                lval->ptr_type = ptr->type;
-                //lval->val_type = CINT;
-            }
-            if (ptr->identity==ARRAY ||
-                (ptr->type==STRUCT && ptr->identity==VARIABLE)) {
-                // array or struct
-                lval->ptr_type = ptr->type;
-                //lval->val_type = CINT;
-                k = 0;
-            }
-            else k = 1;
+            else return k;
         }
-        else return k;
-    }
     if (ptr == 0)
         return k;
     if (ptr->identity == FUNCTION) {
