@@ -552,6 +552,15 @@ gen_arithm_shift_right() {
 }
 
 /**
+ * logically shift right the secondary register the number of
+ * times in the primary register (results in primary register)
+ */
+gen_logical_shift_right() {
+    gen_pop();
+    gen_call ("cclsr");
+}
+
+/**
  * arithmetic shift left the secondary register the number of
  * times in the primary register (results in primary register)
  */

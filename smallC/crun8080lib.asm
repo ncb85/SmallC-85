@@ -19,7 +19,7 @@
         .globl  ccsxt
         .globl  ccor,ccand,ccxor
         .globl  cceq,ccne,ccgt,ccle,ccge,cclt,ccuge,ccult,ccugt,ccule
-        .globl  ccasr,ccasl
+        .globl  cclsr,ccasr,ccasl
         .globl  ccsub,ccneg,cccom,cclneg,ccbool,ccmul,ccdiv
         .globl  cccase
 ;        .globl  brkend,Xstktop
@@ -157,6 +157,21 @@ ccucmp: mov     a,d
         cmp     l
 ccucmp1: lxi     h,1             ;preset true
         ret
+; shift DE right logically by HL, move to HL
+cclsr:  xchg
+cclsr1: dcr     e
+        rm
+        stc
+        cmc
+        mov     a,h
+        rar
+        mov     h,a
+        mov     a,l
+        rar
+        mov     l,a
+        stc
+        cmc
+        jmp     cclsr1
 ; shift DE right arithmetically by HL, move to HL
 ccasr:  xchg
 ccasr1: dcr     e

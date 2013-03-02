@@ -114,7 +114,13 @@ hier1 (LVALUE *lval) {
                         gen_mod();
                     }
                     break;
-                case '>': gen_arithm_shift_right (); break;
+                case '>':
+                    if (nosign(lval)) {
+                        gen_logical_shift_right();
+                    } else {
+                        gen_arithm_shift_right();
+                    }
+                    break;
                 case '<': gen_arithm_shift_left(); break;
                 case '&': gen_and (); break;
                 case '^': gen_xor (); break;
@@ -416,8 +422,8 @@ hier7 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
-    k = hier8 (lval);
-    blanks ();
+    k = hier8(lval);
+    blanks();
     if (!sstreq (">>") &&
         !sstreq ("<<") || sstreq(">>=") || sstreq("<<="))
         return (k);
@@ -429,11 +435,15 @@ hier7 (LVALUE *lval) {
             gen_push(k);
             if (k = hier8 (lval2))
                 k = rvalue(lval2, k);
-            gen_arithm_shift_right ();
+            if (nosign(lval)) {
+                gen_logical_shift_right();
+            } else {
+                gen_arithm_shift_right();
+            }
         } else if (sstreq("<<") && ! sstreq("<<=")) {
             inbyte(); inbyte();
             gen_push(k);
-            if (k = hier8 (lval2))
+            if (k = hier8(lval2))
                 k = rvalue(lval2, k);
             gen_arithm_shift_left();
         } else
