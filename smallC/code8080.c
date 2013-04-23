@@ -29,7 +29,6 @@ void header () {
     frontend_version();
     newline ();
     output_line ("\t;program area SMALLC_GENERATED is RELOCATABLE");
-    output_line ("\t.area\tSMALLC_GENERATED\t(REL,CON)");
     output_line ("\t.module SMALLC_GENERATED");
     output_line ("\t.list   (err, loc, bin, eqt, cyc, lin, src, lst, md)");
     output_line ("\t.nlist  (pag)");
@@ -47,7 +46,7 @@ newline () {
 }
 
 void initmac() {
-    //defmac("cpm\t1");
+    defmac("cpm\t1");
     defmac("I8080\t1");
     defmac("RMAC\t1");
     defmac("smallc\t1");
