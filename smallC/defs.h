@@ -84,19 +84,7 @@ struct tag_symbol {
 #define DEFAUTO 6
 
 // "do"/"for"/"while"/"switch" statement stack
-#define WSTABSZ 100
-
-// entry offsets in "do"/"for"/"while"/"switch" stack
-#define WSSYM   0
-#define WSSP    1
-#define WSTYP   2
-#define WSCASEP 3
-#define WSTEST  3
-#define WSINCR  4
-#define WSDEF   4
-#define WSBODY  5
-#define WSTAB   5
-#define WSEXIT  6
+#define WSTABSZ 20
 
 struct while_rec {
 	int symbol_idx;		// symbol table address

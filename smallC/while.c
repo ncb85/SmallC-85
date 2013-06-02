@@ -42,15 +42,17 @@ WHILE *readwhile () {
 
 WHILE *findwhile () {
     //int     *ptr;
+    int while_table_idx;
 
     //for (ptr = wsptr; ptr != ws;) {
-    for (; while_table_index != 0;) {
+    while_table_idx = while_table_index;
+    for (; while_table_idx != 0;) {
         //ptr = ptr - WSSIZ;
-        while_table_index--;
+        while_table_idx--;
         //if (ptr[WSTYP] != WSSWITCH)
         //        return (ptr);
-        if (ws[while_table_index].type != WSSWITCH)
-            return &ws[while_table_index];
+        if (ws[while_table_idx].type != WSSWITCH)
+            return &ws[while_table_idx];
     }
     error ("no active do/for/while");
     return (0);
