@@ -54,6 +54,7 @@ primary (LVALUE *lval) {
             reg = gen_get_locale(symbol);
             lval->symbol = symbol;
             lval->indirect = symbol->type;
+            lval->tagsym = 0;
             if (symbol->type == STRUCT) {
                 lval->tagsym = &tag_table[symbol->tagidx];
             }
@@ -73,6 +74,7 @@ primary (LVALUE *lval) {
             if (symbol->identity != FUNCTION) {
                 lval->symbol = symbol;
                 lval->indirect = 0;
+                lval->tagsym = 0;
                 if (symbol->type == STRUCT) {
                     lval->tagsym = &tag_table[symbol->tagidx];
                 }

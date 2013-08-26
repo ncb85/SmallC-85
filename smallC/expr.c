@@ -85,7 +85,7 @@ hier1 (LVALUE *lval) {
             switch (fc) {
                 case '-':       {
                     if (dbltest(lval,lval2)) {
-                        gen_multiply(lval->ptr_type, lval->tagsym->size);
+                        gen_multiply(lval->ptr_type, lval->tagsym ? lval->tagsym->size : INTSIZE);
                     }
                     gen_sub();
                     result (lval, lval2);
@@ -93,7 +93,7 @@ hier1 (LVALUE *lval) {
                 }
                 case '+':       {
                     if (dbltest(lval,lval2)) {
-                        gen_multiply(lval->ptr_type, lval->tagsym->size);
+                        gen_multiply(lval->ptr_type, lval->tagsym ? lval->tagsym->size : INTSIZE);
                     }
                     gen_add (lval,lval2);
                     result(lval,lval2);
@@ -475,7 +475,7 @@ hier8 (LVALUE *lval) {
                 k = rvalue(lval2, k);
             // if left is pointer and right is int, scale right
             if (dbltest(lval,lval2)) {
-                gen_multiply(lval->ptr_type, lval->tagsym->size);
+                gen_multiply(lval->ptr_type, lval->tagsym ? lval->tagsym->size : INTSIZE);
             }
             // will scale left if right int pointer and left int
             gen_add (lval,lval2);
@@ -489,7 +489,7 @@ hier8 (LVALUE *lval) {
                 in first case, int is scaled up,
                 in second, result is scaled down. */
             if (dbltest(lval,lval2)) {
-                gen_multiply(lval->ptr_type, lval->tagsym->size);
+                gen_multiply(lval->ptr_type, lval->tagsym ? lval->tagsym->size : INTSIZE);
             }
             gen_sub ();
             /* if both pointers, scale result */
