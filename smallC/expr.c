@@ -617,8 +617,12 @@ hier10 (LVALUE *lval) {
         }
         ptr = lval->symbol;
         lval->ptr_type = ptr->type;
-        if (lval->indirect)
+        if (lval->indirect) { // reference to local
+            if (k == DE_REG) {
+                gen_swap();
+            }
             return (0);
+        }
         // global and non-array
         gen_immediate ();
         output_string ((ptr = lval->symbol)->name);

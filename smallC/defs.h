@@ -116,7 +116,7 @@ struct while_rec {
 #define MPMAX   LINEMAX
 
 /* macro (define) pool */
-#define MACQSIZE        1500
+#define MACQSIZE        1000
 #define MACMAX  (MACQSIZE-1)
 
 /* "include" stack */
@@ -188,7 +188,7 @@ void gen_get_indirect(char typeobj, int reg);
  */
 void gen_put_memory (SYMBOL *sym);
 
-// intialisation of global variables
+// initialisation of global variables
 #define INIT_TYPE    NAMESIZE
 #define INIT_LENGTH  NAMESIZE+1
 #define INITIALS_SIZE 5*1024
