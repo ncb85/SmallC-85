@@ -116,7 +116,7 @@ struct while_rec {
 #define MPMAX   LINEMAX
 
 /* macro (define) pool */
-#define MACQSIZE        1000
+#define MACQSIZE        1500
 #define MACMAX  (MACQSIZE-1)
 
 /* "include" stack */
@@ -136,8 +136,9 @@ struct while_rec {
 
 #define DEFLIB  inclib()
 
-#define HL_REG 1
-#define DE_REG 2
+#define FETCH  1
+#define HL_REG 1<<1
+#define DE_REG 1<<2
 
 struct lvalue {
 	SYMBOL *symbol;		// symbol table address, or 0 for constant

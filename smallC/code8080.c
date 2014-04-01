@@ -160,7 +160,8 @@ int gen_get_locale(SYMBOL *sym) {
         newline();
         return HL_REG;
     } else {
-        if (uflag) {
+        if (uflag && !(sym->identity == ARRAY)) {// ||
+                //(sym->identity == VARIABLE && sym->type == STRUCT))) {
             output_with_tab("ldsi\t");
             output_number(sym->offset - stkp);
             newline ();
@@ -217,27 +218,24 @@ void gen_put_indirect(char typeobj) {
  */
 void gen_get_indirect(char typeobj, int reg) {
     if (typeobj == CCHAR) {
-        if (reg == DE_REG) {
+        if (reg & DE_REG) {
             gen_swap();
         }
         gen_call("ccgchar");
     } else if (typeobj == UCHAR) {
-        if (reg == DE_REG) {
+        if (reg & DE_REG) {
             gen_swap();
         }
         //gen_call("cguchar");
         output_line("mov \tl,m");
         output_line("mvi \th,0");
-    } else {
+    } else { // int
         if (uflag) {
-            if (reg == HL_REG) {
+            if (reg & HL_REG) {
                 gen_swap();
             }
             output_line("lhlx");
         } else {
-            if (reg == DE_REG) {
-                gen_swap();
-            }
             gen_call("ccgint");
         }
     }
@@ -262,7 +260,7 @@ gen_immediate() {
  * push the primary register onto the stack
  */
 gen_push(int reg) {
-    if (reg == DE_REG) {
+    if (reg & DE_REG) {
         output_line ("push\td");
         stkp = stkp - INTSIZE;
     } else {
@@ -600,19 +598,18 @@ gen_convert_primary_reg_value_to_bool() {
  * increment the primary register by 1 if char, INTSIZE if int
  */
 gen_increment_primary_reg(LVALUE *lval) {
-    output_line("inx \th");
     switch (lval->ptr_type) {
-        case CINT:
-        case UINT:
-            output_line("inx \th");
-            break;
         case STRUCT:
             gen_immediate2();
-            output_number(lval->tagsym->size - 1);
+            output_number(lval->tagsym->size);
             newline();
             output_line("dad \td");
             break ;
+        case CINT:
+        case UINT:
+            output_line("inx \th");
         default:
+            output_line("inx \th");
             break;
     }
 }
@@ -647,12 +644,11 @@ gen_decrement_primary_reg(LVALUE *lval) {
     }
 }
 
-/*
- *      following are the conditional operators.
- *      they compare the secondary register against the primary register
- *      and put a literl 1 in the primary if the condition is true,
- *      otherwise they clear the primary register
- *
+/**
+ * following are the conditional operators.
+ * they compare the secondary register against the primary register
+ * and put a literal 1 in the primary if the condition is true,
+ * otherwise they clear the primary register
  */
 
 /**

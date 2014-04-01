@@ -129,7 +129,7 @@ rvalue(LVALUE *lval, int reg) {
 /**
  * parses test part "(expression)" input and generates assembly for jump
  * @param label
- * @param ft
+ * @param ft : false - test jz, true test jnz
  * @return 
  */
 test(int label, int ft) {

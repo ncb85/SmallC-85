@@ -86,9 +86,9 @@ main(int argc, char *argv[]) {
  */
 compile(char *file) {
     if (file == NULL || filename_typeof(file) == 'c') {
-        global_table_index = 0; //glbptr = STARTGLB;
-        local_table_index = NUMBER_OF_GLOBALS; //locptr = STARTLOC;
-        while_table_index = 0; //wsptr = ws;
+        global_table_index = 0;
+        local_table_index = NUMBER_OF_GLOBALS;
+        while_table_index = 0;
         tag_table_index = 0;
         inclsp =
         iflevel =

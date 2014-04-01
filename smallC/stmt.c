@@ -295,7 +295,7 @@ doswitch() {
         gen_immediate ();
         print_label (ws.body_tab);
         newline ();
-        gen_push ();
+        gen_push (HL_REG);
         needbrack ("(");
         expression (YES);
         needbrack (")");

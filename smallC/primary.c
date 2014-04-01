@@ -12,6 +12,7 @@ primary (LVALUE *lval) {
     SYMBOL *symbol;
 
     lval->ptr_type = 0;  // clear pointer/array type
+    lval->tagsym = 0;
     if (match ("(")) {
         k = hier1 (lval);
         needbrack (")");
@@ -54,27 +55,25 @@ primary (LVALUE *lval) {
             reg = gen_get_locale(symbol);
             lval->symbol = symbol;
             lval->indirect = symbol->type;
-            lval->tagsym = 0;
             if (symbol->type == STRUCT) {
                 lval->tagsym = &tag_table[symbol->tagidx];
             }
             if (symbol->identity == ARRAY ||
                 (symbol->identity == VARIABLE && symbol->type == STRUCT)) {
                 lval->ptr_type = symbol->type;
-                return 0;
+                return reg;
             }
             if (symbol->identity == POINTER) {
                 lval->indirect = CINT;
                 lval->ptr_type = symbol->type;
             }
-            return reg;
+            return FETCH | reg;
         }
         if ((symbol_table_idx = find_global(sname)) > -1) {
             symbol = &symbol_table[symbol_table_idx];
             if (symbol->identity != FUNCTION) {
                 lval->symbol = symbol;
                 lval->indirect = 0;
-                lval->tagsym = 0;
                 if (symbol->type == STRUCT) {
                     lval->tagsym = &tag_table[symbol->tagidx];
                 }
@@ -83,13 +82,13 @@ primary (LVALUE *lval) {
                     if (symbol->identity == POINTER) {
                         lval->ptr_type = symbol->type;
                     }
-                    return 1;
+                    return FETCH | HL_REG;
                 }
                 gen_immediate();
                 output_string(symbol->name);
                 newline();
                 lval->indirect = symbol->type;
-                lval->ptr_type = 0;
+                lval->ptr_type = symbol->type;
                 return 0;
             }
         }
@@ -167,7 +166,6 @@ constant (int val[]) {
     output_number (val[0]);
     newline ();
     return (1);
-
 }
 
 number (int val[]) {
