@@ -16,6 +16,11 @@ Generated code is suitable for ASXXXX assembler/linker.
 Support for unsigned types
 Support for undocumented 8085 istructions LHLX, SHLX, LDSI, ARHL
 Support for structs and unions
+
+***** final note *****
+This is last version here at github, if there will be any other development
+changes will be commited to googlecode repo only. Search for SmallC there.
+
 -------------------------- original posting ------------------------------
 
 Small C version C3.0R1.1
