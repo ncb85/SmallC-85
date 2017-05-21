@@ -11,11 +11,13 @@
  * @param type
  * @param storage
  * @param mtag tag of struct whose members are being declared, or zero
- * @param otag tag of struct object being declared. only matters if mtag is non-zero
+ * @param otag tag of struct object being declared. only matters if mtag is
+ *             non-zero
  * @param is_struct struct or union or no meaning
- * @return 
+ * @return
  */
-declare_global(int type, int storage, TAG_SYMBOL *mtag, int otag, int is_struct) {
+declare_global(int type, int storage, TAG_SYMBOL *mtag, int otag, int is_struct)
+{
     int     dim, identity;
     char    sname[NAMESIZE];
 
@@ -35,33 +37,33 @@ declare_global(int type, int storage, TAG_SYMBOL *mtag, int otag, int is_struct)
                 multidef (sname);
             if (match ("[")) {
                 dim = needsub ();
-                //if (dim || storage == EXTERN) {
+                /*if (dim || storage == EXTERN) {*/
                     identity = ARRAY;
-                //} else {
-                //    identity = POINTER;
-                //}
+                /*} else {
+                    identity = POINTER;
+                }*/
             }
-            // add symbol
-            if (mtag == 0) { // real variable, not a struct/union member
+            /* add symbol*/
+            if (mtag == 0) { /* real variable, not a struct/union member */
                 identity = initials(sname, type, identity, dim, otag);
-                add_global (sname, identity, type, (dim == 0 ? -1 : dim), storage);
+                add_global (sname, identity, type, (!dim ? -1 : dim), storage);
                 if (type == STRUCT) {
                     symbol_table[current_symbol_table_idx].tagidx = otag;
                 }
                 break;
             } else if (is_struct) {
-                // structure member, mtag->size is offset
+                /* structure member, mtag->size is offset */
                 add_member(sname, identity, type, mtag->size, storage);
-                // store (correctly scaled) size of member in tag table entry
+                /* store (correctly scaled) size of member in tag table entry */
                 if (identity == POINTER)
                     type = CINT;
                 scale_const(type, otag, &dim);
                 mtag->size += dim;
             }
             else {
-                // union member, offset is always zero
+                /* union member, offset is always zero */
                 add_member(sname, identity, type, 0, storage);
-                // store maximum member size in tag table entry
+                /* store maximum member size in tag table entry */
                 if (identity == POINTER)
                     type = CINT;
                 scale_const(type, otag, &dim);
@@ -85,25 +87,26 @@ declare_global(int type, int storage, TAG_SYMBOL *mtag, int otag, int is_struct)
 int initials(char *symbol_name, int type, int identity, int dim, int otag) {
     int dim_unknown = 0;
     litptr = 0;
-    if(dim == 0) { // allow for xx[] = {..}; declaration
+    if(dim == 0) { /* allow for xx[] = {..}; declaration */
         dim_unknown = 1;
     }
     if (!(type & CCHAR) && !(type & CINT) && !(type == STRUCT)) {
         error("unsupported storage size");
     }
     if(match("=")) {
-        // an array or struct
+        /* an array or struct */
         if(match("{")) {
-            // aggregate initialiser
-            if ((identity == POINTER || identity == VARIABLE) && type == STRUCT) {
-                // aggregate is structure or pointer to structure
+            /* aggregate initialiser */
+            if ((identity == POINTER || identity == VARIABLE) && type == STRUCT)
+            {
+                /* aggregate is structure or pointer to structure */
                 dim = 0;
                 struct_init(&tag_table[otag], symbol_name);
             }
             else {
                 while((dim > 0) || (dim_unknown)) {
                     if (identity == ARRAY && type == STRUCT) {
-                        // array of struct
+                        /* array of struct */
                         needbrack("{");
                         struct_init(&tag_table[otag], symbol_name);
                         --dim;
@@ -122,7 +125,7 @@ int initials(char *symbol_name, int type, int identity, int dim, int otag) {
                     identity = POINTER;
             }
             needbrack("}");
-        // single constant
+        /* single constant */
         } else {
             init(symbol_name, type, identity, &dim, 0);
         }
@@ -135,19 +138,21 @@ int initials(char *symbol_name, int type, int identity, int dim, int otag) {
  * @param tag
  */
 struct_init(TAG_SYMBOL *tag, char *symbol_name) {
-	int dim ;
-	int member_idx;
+    int dim ;
+    int member_idx;
 
-	member_idx = tag->member_idx;
-	while (member_idx < tag->member_idx + tag->number_of_members) {
-		init(symbol_name, member_table[tag->member_idx + member_idx].type,
-                        member_table[tag->member_idx + member_idx].identity, &dim, tag);
-		++member_idx;
-		if ((match(",") == 0) && (member_idx != (tag->member_idx + tag->number_of_members))) {
-			error("struct initialisaton out of data");
-			break ;
-		}
-	}
+    member_idx = tag->member_idx;
+    while (member_idx < tag->member_idx + tag->number_of_members) {
+        init(symbol_name, member_table[tag->member_idx + member_idx].type,
+            member_table[tag->member_idx + member_idx].identity, &dim, tag);
+        ++member_idx;
+        if((!match(",")) &&
+            (member_idx != (tag->member_idx + tag->number_of_members)))
+        {
+            error("struct initialisaton out of data");
+            break ;
+        }
+    }
 }
 
 /**
@@ -344,9 +349,11 @@ int add_global (char *sname, int identity, int type, int offset, int storage) {
  * @param type
  * @param offset size in bytes
  * @param storage_class
- * @return 
+ * @return
  */
-int add_local (char *sname, int identity, int type, int offset, int storage_class) {
+int add_local(char *sname, int identity, int type, int offset,
+    int storage_class)
+{
     int k;
     SYMBOL *symbol;
     char *buffer_ptr;
@@ -406,7 +413,7 @@ illname() {
 /**
  * print error message
  * @param symbol_name
- * @return 
+ * @return
  */
 multidef (char *symbol_name) {
     error ("already defined");

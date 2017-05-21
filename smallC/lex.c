@@ -10,7 +10,7 @@
 /**
  * test if given character is alpha
  * @param c
- * @return 
+ * @return
  */
 alpha(char c) {
     c = c & 127;
@@ -22,7 +22,7 @@ alpha(char c) {
 /**
  * test if given character is numeric
  * @param c
- * @return 
+ * @return
  */
 numeric(char c) {
     c = c & 127;
@@ -32,7 +32,7 @@ numeric(char c) {
 /**
  * test if given character is alphanumeric
  * @param c
- * @return 
+ * @return
  */
 alphanumeric(char c) {
     return ((alpha (c)) || (numeric (c)));
@@ -68,7 +68,7 @@ endst() {
 /**
  * enforces bracket
  * @param str
- * @return 
+ * @return
  */
 needbrack(char *str) {
     if (!match (str)) {
@@ -80,9 +80,9 @@ needbrack(char *str) {
 }
 
 /**
- * 
+ *
  * @param str1
- * @return 
+ * @return
  */
 sstreq(str1) char *str1; {
     return (streq(line + lptr, str1));
@@ -92,11 +92,11 @@ sstreq(str1) char *str1; {
  * indicates whether or not the current substring in the source line matches a
  * literal string
  * accepts the address of the current character in the source
- * line and the address of the a literal string, and returns the substring length
- * if a match occurs and zero otherwise
+ * line and the address of the a literal string, and returns the substring
+ * length if a match occurs and zero otherwise
  * @param str1 address1
  * @param str2 address2
- * @return 
+ * @return
  */
 streq(char str1[], char str2[]) {
     int k;
@@ -142,7 +142,7 @@ astreq (char str1[], char str2[], int len) {
  * otherwise it retains the current position in the input line and returns false
  * there is no verification that all of the token was matched
  * @param lit
- * @return 
+ * @return
  */
 match (char *lit) {
     int k;
@@ -162,7 +162,7 @@ match (char *lit) {
  * scanned in the process
  * @param lit
  * @param len
- * @return 
+ * @return
  */
 amatch(char *lit, int len) {
     int k;

@@ -14,7 +14,7 @@
  */
 int find_tag(char *sname) {
     int index;
-    
+
     index = 0;
     while (index < tag_table_index) {
         if (astreq (sname, tag_table[index].name, NAMEMAX)) {
@@ -51,7 +51,7 @@ SYMBOL *find_member(TAG_SYMBOL *tag, char *sname) {
  * @param typ
  * @param offset
  * @param storage
- * @return 
+ * @return
  */
 add_member(char *sname, char identity, char type, int offset, int storage_class) {
     char *buffer_ptr;
@@ -75,7 +75,7 @@ int define_struct(char *sname, int storage, int is_struct) {
     TAG_SYMBOL *symbol;
     char *buffer_ptr;
 
-    //tag_table_index++;
+    /*tag_table_index++;*/
     if (tag_table_index >= NUMTAG) {
         error("struct table overflow");
         return 0;

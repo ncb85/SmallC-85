@@ -36,7 +36,7 @@ void header () {
 
 /**
  * prints new line
- * @return 
+ * @return
  */
 newline () {
 #if __CYGWIN__ == 1
@@ -160,8 +160,8 @@ int gen_get_locale(SYMBOL *sym) {
         newline();
         return HL_REG;
     } else {
-        if (uflag && !(sym->identity == ARRAY)) {// ||
-                //(sym->identity == VARIABLE && sym->type == STRUCT))) {
+        if (uflag && !(sym->identity == ARRAY)) {/* ||
+                (sym->identity == VARIABLE && sym->type == STRUCT))) {*/
             output_with_tab("ldsi\t");
             output_number(sym->offset - stkp);
             newline ();
@@ -199,7 +199,7 @@ void gen_put_memory(SYMBOL *sym) {
 void gen_put_indirect(char typeobj) {
     gen_pop ();
     if (typeobj & CCHAR) {
-        //gen_call("ccpchar");
+        /*gen_call("ccpchar");*/
         output_line("mov \ta,l");
         output_line("stax\td");
     } else {
@@ -226,10 +226,10 @@ void gen_get_indirect(char typeobj, int reg) {
         if (reg & DE_REG) {
             gen_swap();
         }
-        //gen_call("cguchar");
+        /*gen_call("cguchar");*/
         output_line("mov \tl,m");
         output_line("mvi \th,0");
-    } else { // int
+    } else { /*int*/
         if (uflag) {
             if (reg & HL_REG) {
                 gen_swap();
@@ -300,7 +300,7 @@ gen_call(char *sname) {
 declare_entry_point(char *symbol_name) {
     output_string(symbol_name);
     output_label_terminator();
-    //newline();
+    /*newline();*/
 }
 
 /**
@@ -628,7 +628,7 @@ gen_decrement_primary_reg(LVALUE *lval) {
             gen_immediate2();
             output_number(lval->tagsym->size - 1);
             newline();
-            // two's complement
+            /* two's complement */
             output_line("mov  \ta,d");
             output_line("cma");
             output_line("mov  \td,a");
@@ -636,7 +636,7 @@ gen_decrement_primary_reg(LVALUE *lval) {
             output_line("cma");
             output_line("mov \te,a");
             output_line("inx \td");
-            // substract
+            /* subtract */
             output_line("dad \td");
             break ;
         default:
@@ -803,7 +803,7 @@ add_offset(int val) {
  * @param size
  */
 gen_multiply(int type, int size) {
-	switch (type) {
+    switch (type) {
         case CINT:
         case UINT:
             gen_multiply_by_two();

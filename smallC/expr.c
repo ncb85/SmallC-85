@@ -11,7 +11,7 @@
  */
 nosign(LVALUE *is) {
     SYMBOL *ptr;
-    
+
     if((is->ptr_type) ||
       ((ptr = is->symbol) && (ptr->type & UNSIGNED))) {
         return 1;
@@ -24,7 +24,7 @@ nosign(LVALUE *is) {
  * lval.indirect - type indirect object to fetch, else 0 for static object
  * lval.ptr_type - type pointer or array, else 0
  * @param comma
- * @return 
+ * @return
  */
 expression(int comma) {
     LVALUE lval;
@@ -42,7 +42,7 @@ expression(int comma) {
 /**
  * assignment operators
  * @param lval
- * @return 
+ * @return
  */
 hier1 (LVALUE *lval) {
     int     k;
@@ -62,7 +62,7 @@ hier1 (LVALUE *lval) {
             k = rvalue(lval2, k);
         store (lval);
         return (0);
-    } else {      
+    } else {
         fc = ch();
         if  (match ("-=") ||
             match ("+=") ||
@@ -492,11 +492,11 @@ hier8 (LVALUE *lval) {
             k = hier9 (lval2);
             if (k & FETCH)
                 k = rvalue(lval2, k);
-            // if left is pointer and right is int, scale right
+            /* if left is pointer and right is int, scale right */
             if (dbltest(lval,lval2)) {
                 gen_multiply(lval->ptr_type, lval->tagsym ? lval->tagsym->size : INTSIZE);
             }
-            // will scale left if right int pointer and left int
+            /* will scale left if right int pointer and left int */
             gen_add (lval,lval2);
             result (lval, lval2);
         } else if (match ("-")) {
@@ -629,7 +629,7 @@ hier10 (LVALUE *lval) {
             lval->indirect = ptr->type;
         else
             lval->indirect = CINT;
-        lval->ptr_type = 0;  // flag as not pointer or array
+        lval->ptr_type = 0;  /* flag as not pointer or array */
         return FETCH | k;
     } else if (ch()=='&' && nch()!='&' && nch()!='=') {
         inbyte();
@@ -646,7 +646,7 @@ hier10 (LVALUE *lval) {
             }
             return (HL_REG);
         }
-        // global and non-array
+        /* global and non-array */
         gen_immediate ();
         output_string ((ptr = lval->symbol)->name);
         newline ();
@@ -716,7 +716,7 @@ hier11(LVALUE *lval) {
                 needbrack ("]");
                 gen_multiply(ptr->type, tag_table[ptr->tagidx].size);
                 gen_add (NULL,NULL);
-                //lval->symbol = 0;
+                /*lval->symbol = 0;*/
                 lval->indirect = ptr->type;
                 lval->ptr_type = 0;
                 k = FETCH | HL_REG;
@@ -749,9 +749,13 @@ hier11(LVALUE *lval) {
                 if (k == DE_REG) {
                     gen_swap();
                 }
-                add_offset(ptr->offset); // move pointer from struct begin to struct member
+
+                /* move pointer from struct begin to struct member */
+
+                add_offset(ptr->offset);
                 lval->symbol = ptr;
-                lval->indirect = ptr->type; // lval->indirect = lval->val_type = ptr->type
+                /* lval->indirect = lval->val_type = ptr->type */
+                lval->indirect = ptr->type;
                 lval->ptr_type = 0;
                 lval->tagsym = NULL_TAG;
                 if (ptr->type == STRUCT) {
@@ -760,13 +764,13 @@ hier11(LVALUE *lval) {
                 if (ptr->identity == POINTER) {
                     lval->indirect = CINT;
                     lval->ptr_type = ptr->type;
-                    //lval->val_type = CINT;
+                    /*lval->val_type = CINT;*/
                 }
                 if (ptr->identity==ARRAY ||
                     (ptr->type==STRUCT && ptr->identity==VARIABLE)) {
-                    // array or struct
+                    /* array or struct*/
                     lval->ptr_type = ptr->type;
-                    //lval->val_type = CINT;
+                    /*lval->val_type = CINT;*/
                     k = 0;
                 } else {
                     k = FETCH | HL_REG;

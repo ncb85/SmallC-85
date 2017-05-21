@@ -11,7 +11,7 @@ primary (LVALUE *lval) {
     int     num[1], k, symbol_table_idx, offset, reg;
     SYMBOL *symbol;
 
-    lval->ptr_type = 0;  // clear pointer/array type
+    lval->ptr_type = 0;  /* clear pointer/array type */
     lval->tagsym = 0;
     if (match ("(")) {
         k = hier1 (lval);
@@ -121,7 +121,7 @@ primary (LVALUE *lval) {
  * true if val1 -> int pointer or int array and val2 not pointer or array
  * @param val1
  * @param val2
- * @return 
+ * @return
  */
 dbltest (LVALUE *val1, LVALUE *val2) {
     if (val1 == NULL)
@@ -140,7 +140,7 @@ dbltest (LVALUE *val1, LVALUE *val2) {
  * determine type of binary operation
  * @param lval
  * @param lval2
- * @return 
+ * @return
  */
 result (LVALUE *lval, LVALUE *lval2) {
     if (lval->ptr_type && lval2->ptr_type)
