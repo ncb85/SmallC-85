@@ -66,15 +66,17 @@ main(int argc, char *argv[]) {
                         break;
                     /* set the log if one wishes */
                     case 'l': case 'L':
-                        /* This creates a warning, but is far more space
-                           efficient. I won't do a type conversion to fix it
-                           because it might not be legal in Small c
-                           (I haven't checked) */
-                        if(logFile) logFile = fclose(logFile) & 0;
+                        if(logFile)
+                        {
+                            fclose(logFile);
+                            logFile = NULL;
+                        }
 
                         if(logFile = fopen(++param, "rb"))
                         {
-                            logFile = fclose(logFile) & 0;
+                            fclose(logFile);
+                            logFile = NULL;
+                            
                             oputs("Appending log to ");
                             oputs(param);
                             oputs(".\n");
