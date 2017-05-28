@@ -17,11 +17,11 @@ extern  char    line[];
 extern  char    mline[];
 extern  int     lptr, mptr;
 
-extern TAG_SYMBOL  tag_table[NUMTAG]; // start of structure tag table
-extern int	   tag_table_index;   // ptr to next entry
+extern TAG_SYMBOL  tag_table[NUMTAG]; /* start of structure tag table */
+extern int     tag_table_index;   /* ptr to next entry */
 
-extern SYMBOL	member_table[NUMMEMB];	// structure member table
-extern int	member_table_index;	// ptr to next member<
+extern SYMBOL   member_table[NUMMEMB];  /* structure member table */
+extern int  member_table_index; /* ptr to next member< */
 
 /* miscellaneous storage */
 extern  int     nxtlab,
@@ -41,7 +41,7 @@ extern  int     inclsp;
 extern  char    fname[];
 
 extern  char    quote[];
-extern  int     current_symbol_table_idx; //extern  char    *cptr;
+extern  int     current_symbol_table_idx; /*extern  char    *cptr; */
 extern  int     *iptr;
 extern  int     fexitlab;
 extern  int     iflevel, skiplevel;
@@ -50,8 +50,9 @@ extern  int     sflag;
 extern  int     cflag;
 extern  int     errs;
 extern  int     aflag;
-extern  int     uflag;  // undocumented 8085 instructions
+extern  int     uflag;  /* undocumented 8085 instructions */
 
 extern INITIALS initials_table[NUMBER_OF_GLOBALS];
-extern char initials_data_table[INITIALS_SIZE];      // 5kB space for initialisation data
+/* 5kB space for initialisation data*/
+extern char initials_data_table[INITIALS_SIZE];
 extern int initials_idx, initials_data_idx;

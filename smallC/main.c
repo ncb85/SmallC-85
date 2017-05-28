@@ -1,5 +1,5 @@
 /*
- * File main.c: 2.7 (84/11/28,10:14:56)
+ * File main.c: 2.7 (Rev.1) (17/5/21,1:38:54)
  */
 
 #include <stdio.h>
@@ -7,6 +7,16 @@
 #include <stdlib.h>
 #include "defs.h"
 #include "data.h"
+
+FILE *logFile = NULL;
+
+/* Simple oputs function to replace the ugly fputs(foo, stdout) */
+
+void oputs(char *str)
+{
+    if(logFile) fputs(str, logFile);
+    fputs(str, stderr);
+}
 
 main(int argc, char *argv[]) {
     char *param = NULL, *bp;
@@ -16,30 +26,36 @@ main(int argc, char *argv[]) {
     errs = 0;
     aflag = 1;
     uflag = 0;
-    
-    setbuf(stdout, NULL); // disable stdout buffering
-    
+
+    setbuf(stdout, NULL); /* disable stdout buffering */ /* why exactly? */
+
     for (i=1; i<argc; i++) {
         param = argv[i];
         if (*param == '-') {
             while (*++param) {
                 switch (*param) {
-                    case 't': case 'T': // output c source as asm comments
+                    /* output c source as asm comments */
+                    case 't': case 'T':
                         ctext = 1;
                         break;
-                    case 's': case 'S': // assemble .s files - do #define ASNM to make it work
+                    /* assemble .s files - do #define ASNM to make it work */
+                    case 's': case 'S':
                         sflag = 1;
                         break;
-                    case 'c': case 'C': // linker - this option does not work
+                    /* linker - this option does not work */
+                    case 'c': case 'C':
                         cflag = 1;
                         break;
-                    case 'a': case 'A': // no argument count in A to function calls
+                    /* no argument count in A to function calls */
+                    case 'a': case 'A':
                         aflag = 0;
                         break;
-                    case 'u': case 'U': // use undocumented 8085 instructions
+                    /* use undocumented 8085 instructions */
+                    case 'u': case 'U':
                         uflag = 1;
                         break;
-                    case 'd': case 'D': // define macro
+                    /* define macro */
+                    case 'd': case 'D':
                         bp = ++param;
                         if (!*param) usage();
                         while (*param && *param != '=') param++;
@@ -48,6 +64,29 @@ main(int argc, char *argv[]) {
                         param--;
                         defmac(bp);
                         break;
+                    /* set the log if one wishes */
+                    case 'l': case 'L':
+                        if(logFile)
+                        {
+                            fclose(logFile);
+                            logFile = NULL;
+                        }
+
+                        if(logFile = fopen(++param, "rb"))
+                        {
+                            fclose(logFile);
+                            logFile = NULL;
+                            
+                            oputs("Appending log to ");
+                            oputs(param);
+                            oputs(".\n");
+                        }
+
+                        if(!(logFile = fopen(param, "ab")))
+                            perror("CAN'T OPEN LOGFILE");
+
+                        break;
+
                     default:
                         usage();
                 }
@@ -57,12 +96,12 @@ main(int argc, char *argv[]) {
         }
     }
 
-    smacptr = macptr; // command line defined macros -d
-    //if (!param) {
-    //    usage();
-    //}
+    smacptr = macptr; /* command line defined macros -d */
+    /*if (!param) {
+          usage();
+      }*/
     if (i == argc) {
-        compile(NULL); // training mode - read code from stdin
+        compile(NULL); /* training mode - read code from stdin */
         exit(0);
     }
 
@@ -82,7 +121,7 @@ main(int argc, char *argv[]) {
 /**
  * compile one file if filename is NULL redirect do to stdin/stdout
  * @param file filename
- * @return 
+ * @return
  */
 compile(char *file) {
     if (file == NULL || filename_typeof(file) == 'c') {
@@ -99,23 +138,23 @@ compile(char *file) {
         errcnt =
         ncmp =
         lastst =
-        //quote[1] =
+        /*quote[1] =*/
         0;
         input2 = NULL;
-        //quote[0] = '"';
+        /*quote[0] = '"';*/
         cmode = 1;
         glbflag = 1;
         nxtlab = 0;
         litlab = getlabel();
         defmac("end\tmemory");
-        //add_global("memory", ARRAY, CCHAR, 0, EXTERN);
-        //add_global("stack", ARRAY, CCHAR, 0, EXTERN);
-        rglobal_table_index = global_table_index; //rglbptr = glbptr;
-        //add_global("etext", ARRAY, CCHAR, 0, EXTERN);
-        //add_global("edata", ARRAY, CCHAR, 0, EXTERN);
+        /*add_global("memory", ARRAY, CCHAR, 0, EXTERN);*/
+        /*add_global("stack", ARRAY, CCHAR, 0, EXTERN);*/
+        rglobal_table_index = global_table_index; /*rglbptr = glbptr;*/
+        /*add_global("etext", ARRAY, CCHAR, 0, EXTERN);*/
+        /*add_global("edata", ARRAY, CCHAR, 0, EXTERN);*/
         defmac("short\tint");
         initmac();
-        // compiler body
+        /* compiler body */
         if (file == NULL) {
             input = stdin;
         } else if (!openin(file))
@@ -143,16 +182,19 @@ compile(char *file) {
     }
 #else
     } else {
-        fputs("Don't understand file ", stderr);
-        fputs(file, stderr);
+        oputs("Don't understand file ");
+        oputs(file);
         errs = 1;
     }
 #endif
 }
 
+/* Writes the frontend version to the output */
+
 frontend_version() {
-    output_string("\tFront End (2.7,84/11/28)");
-    output_string("\n;\tFront End for ASXXXX (2.8,13/01/20)");
+    output_line("Front End (2.7,84/11/28)");
+    gen_comment();
+    output_line("Front End for ASXXXX (2.8,13/01/20)");
 }
 
 /**
@@ -160,15 +202,17 @@ frontend_version() {
  * @return exits the execution
  */
 usage() {
-    fputs("usage: sccXXXX [-tcsah] [-dSYM[=VALUE]] files\n", stderr);
-    fputs("-t: output c source as asm comments\n", stderr);
-    fputs("-a: no argument count in A to function calls\n", stderr);
-    fputs("-d: define macro\n", stderr);
-    fputs("-u: use undocumented 8085 instructions LDSI, LHLX, SHLX\n", stderr);
-    fputs("-s: assemble generated output, not implemented\n", stderr);
-    fputs("-c: link, not implemented\n", stderr);
-    fputs("-h: displays usage\n", stderr);
-    fputs("files - one or more files. no filename redirects to stdin/stdout\n", stderr);
+    oputs("usage: sccXXXX [-tcsah] [-dSYM[=VALUE]] [-l[log]] files\n");
+    oputs("-t: output c source as asm comments\n");
+    oputs("-a: no argument count in A to function calls\n");
+    oputs("-d: define macro\n");
+    oputs("-u: use undocumented 8085 instructions LDSI, LHLX, SHLX\n");
+    oputs("-s: assemble generated output, not implemented\n");
+    oputs("-c: link, not implemented\n");
+    oputs("-h: displays usage\n");
+    oputs("-l: set the log\n");
+    oputs("log - a file that you wish to contain most (if not all) messages\n");
+    oputs("files - one or more files. no filename redirects to stdin/stdout\n");
     exit(1);
 }
 
@@ -205,20 +249,21 @@ parse() {
  * @param stclass storage
  * @param mtag
  * @param is_struct
- * @return 
+ * @return
  */
 do_declarations(int stclass, TAG_SYMBOL *mtag, int is_struct) {
     int type;
-    int otag;   // tag of struct object being declared
-    int sflag;		// TRUE for struct definition, zero for union
+    int otag;   /* tag of struct object being declared */
+    int sflag;      /* TRUE for struct definition, zero for union */
     char sname[NAMESIZE];
-    
+
     blanks();
     if ((sflag=amatch("struct", 6)) || amatch("union", 5)) {
-        if (symname(sname) == 0) { // legal name ?
+        if (symname(sname) == 0) { /* legal name ? */
             illname();
         }
-        if ((otag=find_tag(sname)) == -1) { // structure not previously defined
+        /* structure not previously defined */
+        if ((otag=find_tag(sname)) == -1) {
             otag = define_struct(sname, stclass, sflag);
         }
         declare_global(STRUCT, stclass, mtag, otag, is_struct);
@@ -277,7 +322,7 @@ dumpglbs() {
                 dim = symbol->offset;
                 list_size = 0;
                 line_count = 0;
-                if (find_symbol_initials(symbol->name)) { // has initials
+                if (find_symbol_initials(symbol->name)) { /* has initials */
                     list_size = get_size(symbol->name);
                     if (dim == -1) {
                         dim = list_size;
@@ -289,18 +334,21 @@ dumpglbs() {
                     } else {
                         if (line_count % 10 == 0) {
                             newline();
-                            if ((symbol->type & CINT) || (symbol->identity == POINTER)) {
+                            if((symbol->type & CINT) ||
+                                (symbol->identity == POINTER))
+                            {
                                 gen_def_word();
                             } else {
                                 gen_def_byte();
                             }
                         }
                         if (i < list_size) {
-                            // dump data
-                            value = get_item_at(symbol->name, i, &tag_table[symbol->tagidx]);
+                            /* dump data */
+                            value = get_item_at(symbol->name, i,
+                                &tag_table[symbol->tagidx]);
                             output_number(value);
                         } else {
-                            // dump zero, no more data available
+                            /* dump zero, no more data available */
                             output_number(0);
                         }
                         line_count++;
@@ -332,19 +380,22 @@ dump_struct(SYMBOL *symbol, int position) {
     number_of_members = tag_table[symbol->tagidx].number_of_members;
     newline();
     for (i=0; i<number_of_members; i++) {
-        // i is the index of current member, get type
-        int member_type = member_table[tag_table[symbol->tagidx].member_idx + i].type;
+        /* i is the index of current member, get type */
+        int member_type = member_table[
+            tag_table[symbol->tagidx].member_idx + i].type;
+
         if (member_type & CINT) {
             gen_def_word();
         } else {
             gen_def_byte();
         }
         if (position < get_size(symbol->name)) {
-            // dump data
-            value = get_item_at(symbol->name, position*number_of_members+i, &tag_table[symbol->tagidx]);
+            /* dump data */
+            value = get_item_at(symbol->name, position*number_of_members+i,
+                &tag_table[symbol->tagidx]);
             output_number(value);
         } else {
-            // dump zero, no more data available
+            /* dump zero, no more data available */
             output_number(0);
         }
         newline();
@@ -390,4 +441,3 @@ filename_typeof(char *s) {
         return (*(s + 1));
     return (' ');
 }
-

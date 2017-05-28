@@ -164,7 +164,7 @@ noiferr()
 
 /**
  * preprocess - copies mline to line with special treatment of preprocess cmds
- * @return 
+ * @return
  */
 cpp ()
 {
@@ -234,7 +234,8 @@ cpp ()
                                 }
                         inchar ();
                         inchar ();
-                } else if ((ch () == '/') & (nch () == '/')) { // one line comment
+                        /* one line comment */
+                } else if ((ch () == '/') & (nch () == '/')) {
                         while(gch());
                 } else if (alphanumeric(ch ())) {
                         k = 0;
@@ -303,7 +304,7 @@ addmac ()
         while (putmac (sname[k++]));
         while (ch () == ' ' | ch () == 9)
                 gch ();
-        //while (putmac (gch ()));
+        /*while (putmac (gch ()));*/
         while (putmac(remove_one_line_comment(gch ())));
         if (macptr >= MACMAX)
                 error ("macro table full");
@@ -313,7 +314,7 @@ addmac ()
 /**
  * removes one line comments from defines
  * @param c
- * @return 
+ * @return
  */
 remove_one_line_comment(c) char c; {
     if ((c == '/') && (ch() == '/')) {

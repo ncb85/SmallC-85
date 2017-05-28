@@ -51,19 +51,20 @@ statement_declare() {
 /**
  * local declarations
  * @param stclass
- * @return 
+ * @return
  */
 do_local_declares(int stclass) {
     int type = 0;
-    int otag;   // tag of struct object being declared
-    int sflag;  // TRUE for struct definition, zero for union
+    int otag;   /* tag of struct object being declared */
+    int sflag;  /* TRUE for struct definition, zero for union */
     char sname[NAMESIZE];
     blanks();
     if ((sflag=amatch("struct", 6)) || amatch("union", 5)) {
-        if (symname(sname) == 0) { // legal name ?
+        if (symname(sname) == 0) { /* legal name ? */
             illname();
         }
-        if ((otag=find_tag(sname)) == -1) { // structure not previously defined
+        if ((otag=find_tag(sname)) == -1) /* structure not previously defined */
+        {
             otag = define_struct(sname, stclass, sflag);
         }
         declare_local(STRUCT, stclass, otag);
@@ -299,7 +300,7 @@ doswitch() {
         needbrack ("(");
         expression (YES);
         needbrack (")");
-        stkp = stkp + INTSIZE;  // '?case' will adjust the stack
+        stkp = stkp + INTSIZE;  /* '?case' will adjust the stack */
         gen_jump_case ();
         statement (NO);
         ptr = readswitch ();
@@ -371,7 +372,7 @@ dobreak() {
  * "continue" statement
  */
 docont() {
-        WHILE *ptr; //int     *ptr;
+        WHILE *ptr; /*int     *ptr; */
 
         if ((ptr = findwhile ()) == 0)
                 return;

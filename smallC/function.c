@@ -38,11 +38,11 @@ newfunc() {
     output_string(n);
     output_label_terminator();
     newline();
-    local_table_index = NUMBER_OF_GLOBALS; //locptr = STARTLOC;
+    local_table_index = NUMBER_OF_GLOBALS; /*locptr = STARTLOC;*/
     argstk = 0;
-    // ANSI style argument declaration
+    /* ANSI style argument declaration*/
     if (doAnsiArguments() == 0) {
-        // K&R style argument declaration
+        /* K&R style argument declaration*/
         while (!match(")")) {
             if (symname(n)) {
                 if (find_locale(n) > -1)
@@ -82,7 +82,7 @@ newfunc() {
     gen_modify_stack(0);
     gen_ret();
     stkp = 0;
-    local_table_index = NUMBER_OF_GLOBALS; //locptr = STARTLOC;
+    local_table_index = NUMBER_OF_GLOBALS; /*locptr = STARTLOC;*/
 }
 
 /**
@@ -91,7 +91,7 @@ newfunc() {
  * symbol table for each named argument
  * completely rewritten version.  p.l. woods
  * @param t argument type (char, int)
- * @return 
+ * @return
  */
 getarg(int t) {
     int j, legalname, address, argptr;
@@ -134,7 +134,7 @@ doAnsiArguments() {
     int type;
     type = get_type();
     if (type == 0) {
-        return 0; // no type detected, revert back to K&R style
+        return 0; /* no type detected, revert back to K&R style */
     }
     argtop = argstk;
     argstk = 0;
@@ -172,7 +172,8 @@ doLocalAnsiArgument(int type) {
             argptr = add_local (symbol_name, identity, type, 0, AUTO);
             argstk = argstk + INTSIZE;
             ptr = local_table_index;
-            while (ptr != NUMBER_OF_GLOBALS) { // modify stack offset as we push more params
+            /* modify stack offset as we push more params */
+            while (ptr != NUMBER_OF_GLOBALS) {
                 ptr = ptr - 1;
                 address = symbol_table[ptr].offset;
                 symbol_table[ptr].offset = address + INTSIZE;
