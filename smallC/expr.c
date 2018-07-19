@@ -635,7 +635,13 @@ hier10 (LVALUE *lval) {
         inbyte();
         k = hier10 (lval);
         if ((k & FETCH) == 0) {
-            error ("illegal address");
+            /* Without this check, this error triggers when trying to
+             * evaluate a struct's address (a legal operation). Because
+             * structs are stored as an address, nothing more than not
+             * erroring is needed to load their address. */
+            if (lval->symbol->type != STRUCT){
+                error ("illegal address");
+            }
             return (0);
         }
         ptr = lval->symbol;
