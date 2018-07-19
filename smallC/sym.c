@@ -246,9 +246,18 @@ declare_local(int typ, int stclass, int otag) {
             }
             if (stclass != LSTATIC) {
                 stkp = gen_modify_stack(stkp - k);
-                add_local(sname, j, typ, stkp, AUTO);
-            } else
-                add_local(sname, j, typ, k, LSTATIC);
+                /* local structs need their tagidx set */
+                current_symbol_table_idx = add_local(sname, j, typ, stkp, AUTO);
+                if(typ == STRUCT) {
+                    symbol_table[current_symbol_table_idx].tagidx = otag;
+                }
+            } else {
+                /* local structs need their tagidx set */
+                current_symbol_table_idx = add_local(sname, j, typ, k, LSTATIC);
+                if(typ == STRUCT) {
+                    symbol_table[current_symbol_table_idx].tagidx = otag;
+                }
+            }
             break;
         }
         if (!match(","))
