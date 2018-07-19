@@ -381,24 +381,33 @@ dump_struct(SYMBOL *symbol, int position) {
     newline();
     for (i=0; i<number_of_members; i++) {
         /* i is the index of current member, get type */
-        int member_type = member_table[
-            tag_table[symbol->tagidx].member_idx + i].type;
-
-        if (member_type & CINT) {
-            gen_def_word();
-        } else {
-            gen_def_byte();
+        SYMBOL member = member_table[
+            tag_table[symbol->tagidx].member_idx + i];
+        /* array members need proper storage space (the compiler currently
+         * doesn't allow arrays in structs to be initilized */
+        if(member.identity == ARRAY){
+            gen_def_storage();
+            output_number(member.struct_size);
+            newline();
         }
-        if (position < get_size(symbol->name)) {
-            /* dump data */
-            value = get_item_at(symbol->name, position*number_of_members+i,
-                &tag_table[symbol->tagidx]);
-            output_number(value);
-        } else {
-            /* dump zero, no more data available */
-            output_number(0);
+		else{
+            /* both pointers and ints take two bytes */
+            if (member.type & CINT || member.identity == POINTER) {
+                gen_def_word();
+            } else {
+                gen_def_byte();
+            }
+            if (position < get_size(symbol->name)) {
+                /* dump data */
+                value = get_item_at(symbol->name, position*number_of_members+i,
+                    &tag_table[symbol->tagidx]);
+                output_number(value);
+            } else {
+                /* dump zero, no more data available */
+                output_number(0);
+            }
+            newline();
         }
-        newline();
     }
 }
 

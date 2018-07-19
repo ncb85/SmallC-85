@@ -94,13 +94,24 @@ newfunc() {
  * @return
  */
 getarg(int t) {
-    int j, legalname, address, argptr;
+    int j, legalname, address, argptr, otag;
     char n[NAMESIZE];
 
     FOREVER
     {
         if (argstk == 0)
             return;
+        /* if a struct is being passed, its tag must be read in before checking
+         * if it is a pointer */
+        if (t == STRUCT) {
+            if (symname(n) == 0) {
+                /* make sure tag doesn't contain odd symbols, etc */
+                illname();
+            }
+            if ((otag=find_tag(n)) == -1) { /* struct tag undefined */
+                error("struct tag undefined");
+            }
+        }
         if (match("*"))
             j = POINTER;
         else
@@ -119,6 +130,15 @@ getarg(int t) {
                 symbol_table[argptr].type = t;
                 address = argtop - symbol_table[argptr].offset;
                 symbol_table[argptr].offset = address;
+                /* set tagidx for struct arguments */
+                if (t == STRUCT){
+                    if (j != POINTER){
+                        /* because each argument takes exactly two bytes on the
+                         * stack, whole structs can't be passed to functions */
+                        error("only struct pointers, not structs, can be passed to functions");
+                    }
+                    symbol_table[argptr].tagidx = otag;
+                }
             } else
                 error("expecting argument name");
         }
@@ -158,8 +178,18 @@ doAnsiArguments() {
 
 doLocalAnsiArgument(int type) {
     char symbol_name[NAMESIZE];
-    int identity, address, argptr, ptr;
-
+    int identity, address, argptr, ptr, otag;
+    /* if a struct is being passed, its tag must be read in before checking if
+     * it is a pointer */
+    if (type == STRUCT) {
+        if (symname(symbol_name) == 0) {
+            /* make sure tag doesn't contain odd symbols, etc */
+            illname();
+        }
+        if ((otag=find_tag(symbol_name)) == -1) { /* struct tag undefined */
+            error("struct tag undefined");
+        }
+    }
     if (match("*")) {
         identity = POINTER;
     } else {
@@ -172,6 +202,14 @@ doLocalAnsiArgument(int type) {
             argptr = add_local (symbol_name, identity, type, 0, AUTO);
             argstk = argstk + INTSIZE;
             ptr = local_table_index;
+            /* if argument is a struct, properly set the argument's tagidx */
+            if (type == STRUCT) {
+                if (identity != POINTER){
+                    /* because each argument takes exactly two bytes on the stack, whole structs can't be passed to functions */
+                    error("only struct pointers, not structs, can be passed to functions");
+                }
+                symbol_table[argptr].tagidx = otag;
+            }
             /* modify stack offset as we push more params */
             while (ptr != NUMBER_OF_GLOBALS) {
                 ptr = ptr - 1;
