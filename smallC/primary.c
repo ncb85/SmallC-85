@@ -8,7 +8,7 @@
 
 primary (LVALUE *lval) {
     char    sname[NAMESIZE];
-    int     num[1], k, symbol_table_idx, offset, reg;
+    int     num[1], k, symbol_table_idx, offset, reg, otag;
     SYMBOL *symbol;
 
     lval->ptr_type = 0;  /* clear pointer/array type */
@@ -21,9 +21,32 @@ primary (LVALUE *lval) {
     if (amatch("sizeof", 6)) {
         needbrack("(");
         gen_immediate();
-        if (amatch("int", 3)) output_number(INTSIZE);
-        else if (amatch("char", 4)) output_number(1);
-        else if (symname(sname)) {
+        if (amatch("int", 3) || amatch("unsigned int", 12)){
+            blanks();
+            /* pointers and ints are both INTSIZE */
+            match("*");
+            output_number(INTSIZE);
+        }
+        else if (amatch("char", 4) || amatch("unsigned char", 13)){
+            /* if sizeof a char pointer, output INTSIZE */
+            if(match("*"))
+                output_number(INTSIZE);
+            else
+                output_number(1);
+        }
+        else if (amatch("struct", 6)){
+            if(symname(sname) == 0){
+                illname();
+            }
+            if((otag = find_tag(sname)) == -1){
+                error("struct tag undefined");
+            }
+            /* Write out struct size, or INTSIZE if struct pointer */
+            if(match("*"))
+                output_number(INTSIZE);
+            else
+                output_number(tag_table[otag].size);
+        } else if (symname(sname)) {
             if (((symbol_table_idx = find_locale(sname)) > -1) ||
                 ((symbol_table_idx = find_global(sname)) > -1)) {
                 symbol = &symbol_table[symbol_table_idx];
