@@ -30,6 +30,7 @@ struct symbol {
     int storage;            /* public, auto, extern, static, lstatic, defauto*/
     int offset;             /* offset*/
     int tagidx;             /* index of struct in tag table*/
+    int struct_size;        /* the size, in bytes, of a member of a struct - only used for member declarations */
 };
 #define SYMBOL struct symbol
 
