@@ -7,11 +7,12 @@
 #include <string.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
 
 /*
  *      open input file
  */
-openin (p) char *p;
+int openin (p) char *p;
 {
         strcpy(fname, p);
         fixname (fname);
@@ -29,7 +30,7 @@ openin (p) char *p;
 /*
  *      open output file
  */
-openout ()
+int openout ()
 {
         outfname (fname);
         if ((output = fopen (fname, "w")) == NULL) {
@@ -44,7 +45,7 @@ openout ()
 /*
  *      change input filename to output filename
  */
-outfname (s)
+void outfname (s)
 char    *s;
 {
         while (*s)
@@ -56,7 +57,7 @@ char    *s;
 /**
  * remove NL from filenames
  */
-fixname (s)
+void fixname (s)
 char    *s;
 {
         while (*s && *s++ != LF);
@@ -68,7 +69,7 @@ char    *s;
 /**
  * check that filename is "*.c"
  */
-checkname (s)
+int checkname (s)
 char    *s;
 {
         while (*s)
@@ -81,12 +82,12 @@ char    *s;
 
 }
 
-kill () {
+void kill () {
         lptr = 0;
         line[lptr] = 0;
 }
 
-readline () {
+void readline () {
         int     k;
         FILE    *unit;
 
@@ -119,7 +120,7 @@ readline () {
         }
 }
 
-inbyte () {
+char inbyte () {
         while (ch () == 0) {
                 if (feof (input))
                         return (0);
@@ -128,7 +129,7 @@ inbyte () {
         return (gch ());
 }
 
-inchar () {
+char inchar () {
         if (ch () == 0)
                 readline ();
         if (feof (input))
@@ -140,7 +141,7 @@ inchar () {
  * gets current char from input line and moves to the next one
  * @return current char
  */
-gch () {
+char gch () {
         if (ch () == 0)
                 return (0);
         else
@@ -151,7 +152,7 @@ gch () {
  * returns next char
  * @return next char
  */
-nch () {
+char nch () {
         if (ch () == 0)
                 return (0);
         else
@@ -162,7 +163,7 @@ nch () {
  * returns current char
  * @return current char
  */
-ch () {
+char ch () {
         return (line[lptr] & 127);
 }
 
@@ -170,7 +171,7 @@ ch () {
  *      print a carriage return and a string only to console
  *
  */
-pl (str)
+void pl (str)
 char    *str;
 {
         int     k;

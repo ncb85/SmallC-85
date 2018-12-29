@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
 
-addwhile (WHILE *ptr) {
+void addwhile (WHILE *ptr) {
 /*int     ptr[];
     int     k;
 
@@ -22,7 +23,7 @@ addwhile (WHILE *ptr) {
     ws[while_table_index++] = *ptr;
 }
 
-delwhile () {
+void delwhile () {
     if (readwhile ()) {
         /*wsptr = wsptr - WSSIZ;*/
         while_table_index--;
@@ -61,7 +62,7 @@ WHILE *findwhile () {
 WHILE *readswitch () {
     WHILE *ptr; /*int     *ptr;*/
 
-    if (ptr = readwhile ()) {
+    if ((ptr = readwhile ())) {
         /*if (ptr[WSTYP] == WSSWITCH)*/
         if (ptr->type == WSSWITCH) {
             return (ptr);
@@ -70,7 +71,7 @@ WHILE *readswitch () {
     return (0);
 }
 
-addcase (int val) {
+void addcase (int val) {
     int     lab;
 
     if (swstp == SWSTSZ)

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
 
 /**
  * look up a tag in tag table by name
@@ -53,12 +54,12 @@ SYMBOL *find_member(TAG_SYMBOL *tag, char *sname) {
  * @param storage
  * @return
  */
-add_member(char *sname, char identity, char type, int offset, int storage_class, int member_size) {
+void add_member(char *sname, char identity, char type, int offset, int storage_class, int member_size) {
     char *buffer_ptr;
     SYMBOL *symbol;
     if (member_table_index >= NUMMEMB) {
         error("symbol table overflow");
-        return 0;
+        // return 0;    No callers ever test a return value.
     }
     symbol = &member_table[member_table_index];
     buffer_ptr = symbol->name;

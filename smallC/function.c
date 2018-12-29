@@ -5,8 +5,17 @@
 #include <stdio.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
 
 int argtop;
+
+/**
+ * Forward references to local functions.
+ */
+
+void multidef();
+int doAnsiArguments();
+void doLocalAnsiArgument();
 
 /**
  * begin a function
@@ -14,7 +23,7 @@ int argtop;
  * of what follows
  * modified version.  p.l. woods
  */
-newfunc() {
+void newfunc() {
     char n[NAMESIZE];
     int idx, type;
     fexitlab = getlabel();
@@ -66,7 +75,7 @@ newfunc() {
         stkp = 0;
         argtop = argstk;
         while (argstk) {
-            if (type = get_type()) {
+	  if ((type = get_type())) {
                 getarg(type);
                 need_semicolon();
             } else {
@@ -93,7 +102,7 @@ newfunc() {
  * @param t argument type (char, int)
  * @return
  */
-getarg(int t) {
+void getarg(int t) {
     int j, legalname, address, argptr, otag;
     char n[NAMESIZE];
 
@@ -150,7 +159,7 @@ getarg(int t) {
     }
 }
 
-doAnsiArguments() {
+int doAnsiArguments() {
     int type;
     type = get_type();
     if (type == 0) {
@@ -174,9 +183,10 @@ doAnsiArguments() {
             break;
         }
     }
+    return 1;
 }
 
-doLocalAnsiArgument(int type) {
+void doLocalAnsiArgument(int type) {
     char symbol_name[NAMESIZE];
     int identity, address, argptr, ptr, otag;
     /* if a struct is being passed, its tag must be read in before checking if

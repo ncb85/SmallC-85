@@ -34,5 +34,5 @@ scc8080: $(OBJ)
 clean:
 	rm -f $(OBJ) scc8080.exe scc8080
 
-%.o : %.c
+%.o : %.c defs.h
 	$(CC) $(CFLAGS) -c $< -o $@

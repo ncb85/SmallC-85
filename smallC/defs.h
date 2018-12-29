@@ -149,47 +149,6 @@ struct lvalue {
 };
 #define LVALUE struct lvalue
 
-/**
- * path to include directories. set at compile time on host machine
- * @return
- */
-char *inclib();
-
-WHILE *readwhile();
-WHILE *findwhile();
-WHILE *readswitch();
-
-/**
- * Output the variable symbol at scptr as an extrn or a public
- * @param scptr
- */
-void ppubext(SYMBOL *scptr);
-
-/**
- * Output the function symbol at scptr as an extrn or a public
- * @param scptr
- */
-void fpubext(SYMBOL *scptr);
-
-/**
- * fetch a static memory cell into the primary register
- * @param sym
- */
-void gen_get_memory (SYMBOL *sym);
-
-/**
- * fetch the specified object type indirect through the primary
- * register into the primary register
- * @param typeobj object type
- */
-void gen_get_indirect(char typeobj, int reg);
-
-/**
- * asm - store the primary register into the specified static memory cell
- * @param sym
- */
-void gen_put_memory (SYMBOL *sym);
-
 /* initialisation of global variables */
 #define INIT_TYPE    NAMESIZE
 #define INIT_LENGTH  NAMESIZE+1
@@ -202,12 +161,3 @@ struct initials_table {
     int data_len;               /* index of tag or zero */
 };
 #define INITIALS struct initials_table
-
-/**
- * determine if 'sname' is a member of the struct with tag 'tag'
- * @param tag
- * @param sname
- * @return pointer to member symbol if it is, else 0
- */
-SYMBOL *find_member(TAG_SYMBOL *tag, char *sname);
-
