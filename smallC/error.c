@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
 
-error (ptr)
+void error (ptr)
 char    ptr[];
 {
         FILE *tempfile;
@@ -20,7 +21,7 @@ char    ptr[];
         errcnt++;
 }
 
-doerror(ptr) char *ptr; {
+void doerror(ptr) char *ptr; {
         int k;
         gen_comment ();
         output_string (line);

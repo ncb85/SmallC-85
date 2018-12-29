@@ -5,11 +5,12 @@
 #include <stdio.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
 
 /**
  * unsigned operand ?
  */
-nosign(LVALUE *is) {
+int nosign(LVALUE *is) {
     SYMBOL *ptr;
 
     if((is->ptr_type) ||
@@ -20,13 +21,32 @@ nosign(LVALUE *is) {
 }
 
 /**
+ * Forward references to silence "implicit int" warnings.
+ */
+
+int hier1a();
+int hier1b();
+int hier1c();
+int hier2();
+int hier3();
+int hier4();
+int hier5();
+int hier6();
+int hier7();
+int hier8();
+int hier9();
+int hier10();
+int hier11();
+
+
+/**
  * lval.symbol - symbol table address, else 0 for constant
  * lval.indirect - type indirect object to fetch, else 0 for static object
  * lval.ptr_type - type pointer or array, else 0
  * @param comma
  * @return
  */
-expression(int comma) {
+void expression(int comma) {
     LVALUE lval;
     int k;
 
@@ -44,7 +64,7 @@ expression(int comma) {
  * @param lval
  * @return
  */
-hier1 (LVALUE *lval) {
+int hier1 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
     char    fc;
@@ -84,7 +104,7 @@ hier1 (LVALUE *lval) {
             gen_push(k);
             k = hier1 (lval2);
             if (k & FETCH)
-                k = rvalue(lval2);
+	      k = rvalue(lval2, 0); /* 0 is a dummy arg to keep warnings quiet. */
             switch (fc) {
                 case '-':       {
                     if (dbltest(lval,lval2)) {
@@ -141,7 +161,7 @@ hier1 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier1a (LVALUE *lval) {
+int hier1a (LVALUE *lval) {
     int     k, lab1, lab2;
     LVALUE lval2[1];
 
@@ -181,7 +201,7 @@ hier1a (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier1b (LVALUE *lval) {
+int hier1b (LVALUE *lval) {
     int     k, lab;
     LVALUE lval2[1];
 
@@ -210,7 +230,7 @@ hier1b (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier1c (LVALUE *lval) {
+int hier1c (LVALUE *lval) {
     int     k, lab;
     LVALUE lval2[1];
 
@@ -239,7 +259,7 @@ hier1c (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier2 (LVALUE *lval) {
+int hier2 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -268,7 +288,7 @@ hier2 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier3 (LVALUE *lval) {
+int hier3 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -297,7 +317,7 @@ hier3 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier4 (LVALUE *lval) {
+int hier4 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -327,7 +347,7 @@ hier4 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier5 (LVALUE *lval) {
+int hier5 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -362,7 +382,7 @@ hier5 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier6 (LVALUE *lval) {
+int hier6 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -434,14 +454,14 @@ hier6 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier7 (LVALUE *lval) {
+int hier7 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
     k = hier8(lval);
     blanks();
-    if (!sstreq (">>") &&
-        !sstreq ("<<") || sstreq(">>=") || sstreq("<<="))
+    if ((!sstreq (">>") &&
+	 !sstreq ("<<") ) || sstreq(">>=") || sstreq("<<="))
         return (k);
     if (k & FETCH)
         k = rvalue(lval, k);
@@ -476,13 +496,13 @@ hier7 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier8 (LVALUE *lval) {
+int hier8 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
     k = hier9 (lval);
     blanks ();
-    if ((ch () != '+') & (ch () != '-') | nch() == '=')
+    if (((ch () != '+') && (ch () != '-')) || nch() == '=')
         return (k);
     if (k & FETCH)
         k = rvalue(lval, k);
@@ -527,7 +547,7 @@ hier8 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier9 (LVALUE *lval) {
+int hier9 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -576,7 +596,7 @@ hier9 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier10 (LVALUE *lval) {
+int hier10 (LVALUE *lval) {
     int     k;
     SYMBOL *ptr;
 
@@ -625,7 +645,7 @@ hier10 (LVALUE *lval) {
         k = hier10 (lval);
         if (k & FETCH)
             k = rvalue(lval, k);
-        if (ptr = lval->symbol)
+        if ((ptr = lval->symbol))
             lval->indirect = ptr->type;
         else
             lval->indirect = CINT;
@@ -695,7 +715,7 @@ hier10 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier11(LVALUE *lval) {
+int hier11(LVALUE *lval) {
     int     direct, k;
     SYMBOL *ptr;
     char    sname[NAMESIZE];

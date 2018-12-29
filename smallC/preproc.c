@@ -7,6 +7,21 @@
 #include <string.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
+
+/**
+ * Forward references to local procedures.
+ */
+int ifline();
+void noiferr();
+int cpp ();
+char keepch ();
+void addmac ();
+char remove_one_line_comment();
+void delmac ();
+char putmac ();
+int findmac ();
+void toggle ();
 
 /**
  * remove "brackets" surrounding include file name
@@ -42,13 +57,13 @@ FILE* fix_include_name () {
 /**
  * open an include file
  */
-doinclude ()
+void doinclude ()
 {
         char    *p;
         FILE    *inp2;
 
         blanks ();
-        if (inp2 = fix_include_name ())
+        if ((inp2 = fix_include_name ()))
                 if (inclsp < INCLSIZ) {
                         inclstk[inclsp++] = input2;
                         input2 = inp2;
@@ -68,7 +83,7 @@ doinclude ()
  * enters mode where assembly language statements are passed
  * intact through parser
  */
-doasm ()
+void doasm ()
 {
         cmode = 0;
         FOREVER {
@@ -85,12 +100,12 @@ doasm ()
 
 }
 
-dodefine ()
+void dodefine ()
 {
         addmac();
 }
 
-doundef ()
+void doundef ()
 {
         int     mp;
         char    sname[NAMESIZE];
@@ -101,19 +116,19 @@ doundef ()
                 return;
         }
 
-        if (mp = findmac(sname))
+        if ((mp = findmac(sname)))
                 delmac(mp);
         kill();
 
 }
 
-preprocess ()
+void preprocess ()
 {
         if (ifline()) return;
         while (cpp());
 }
 
-doifdef (ifdef)
+void doifdef (ifdef)
 int ifdef;
 {
         char sname[NAMESIZE];
@@ -127,7 +142,7 @@ int ifdef;
 
 }
 
-ifline()
+int ifline()
 {
         FOREVER {
                 readline();
@@ -156,7 +171,7 @@ ifline()
 
 }
 
-noiferr()
+void noiferr()
 {
         error("no matching #if...");
 
@@ -166,7 +181,7 @@ noiferr()
  * preprocess - copies mline to line with special treatment of preprocess cmds
  * @return
  */
-cpp ()
+int cpp ()
 {
         int     k;
         char    c, sname[NAMESIZE];
@@ -245,13 +260,13 @@ cpp ()
                                 gch ();
                         }
                         sname[k] = 0;
-                        if (k = findmac (sname)) {
+                        if ((k = findmac (sname))) {
                                 cpped = 1;
-                                while (c = macq[k++])
+                                while ((c = macq[k++]))
                                         keepch (c);
                         } else {
                                 k = 0;
-                                while (c = sname[k++])
+                                while ((c = sname[k++]))
                                         keepch (c);
                         }
                 } else
@@ -261,13 +276,13 @@ cpp ()
         if (mptr >= MPMAX)
                 error ("line too long");
         lptr = mptr = 0;
-        while (line[lptr++] = mline[mptr++]);
+        while ((line[lptr++] = mline[mptr++]));
         lptr = 0;
         return(cpped);
 
 }
 
-keepch (c)
+char keepch (c)
 char    c;
 {
         mline[mptr] = c;
@@ -277,7 +292,7 @@ char    c;
 
 }
 
-defmac(s)
+void defmac(s)
 char *s;
 {
         kill();
@@ -285,7 +300,7 @@ char *s;
         addmac();
 }
 
-addmac ()
+void addmac ()
 {
         char    sname[NAMESIZE];
         int     k;
@@ -296,7 +311,7 @@ addmac ()
                 kill ();
                 return;
         }
-        if (mp = findmac(sname)) {
+        if ((mp = findmac(sname))) {
                 error("Duplicate define");
                 delmac(mp);
         }
@@ -316,7 +331,7 @@ addmac ()
  * @param c
  * @return
  */
-remove_one_line_comment(c) char c; {
+char remove_one_line_comment(c) char c; {
     if ((c == '/') && (ch() == '/')) {
         while(gch());
         return 0;
@@ -325,13 +340,13 @@ remove_one_line_comment(c) char c; {
     }
 }
 
-delmac(mp) int mp; {
+void delmac(mp) int mp; {
         --mp; --mp;     /* step over previous null */
         while (mp >= 0 && macq[mp]) macq[mp--] = '%';
 
 }
 
-putmac (c)
+char putmac (c)
 char    c;
 {
         macq[macptr] = c;
@@ -341,7 +356,7 @@ char    c;
 
 }
 
-findmac (sname)
+int findmac (sname)
 char    *sname;
 {
         int     k;
@@ -359,7 +374,7 @@ char    *sname;
 
 }
 
-toggle (name, onoff)
+void toggle (name, onoff)
 char    name;
 int     onoff;
 {

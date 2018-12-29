@@ -2,11 +2,12 @@
 #include <string.h>
 #include "defs.h"
 #include "data.h"
+#include "extern.h"
 
 /**
  * erase the data storage
  */
-create_initials() {
+void create_initials() {
     /*int i;
     for (i=0; i<INITIALS_SIZE; i++) {
         initials_data_table[i] = 0;
@@ -24,7 +25,7 @@ create_initials() {
  * @param symbol_name
  * @param type
  */
-add_symbol_initials(char *symbol_name, char type) {
+void add_symbol_initials(char *symbol_name, char type) {
     strcpy(initials_table[initials_idx].name, symbol_name);
     initials_table[initials_idx].type = type;
 }
@@ -61,7 +62,7 @@ int find_symbol_initials(char *symbol_name) {
  * @param value
  * @param tag
  */
-add_data_initials(char *symbol_name, int type, int value, TAG_SYMBOL *tag) {
+void add_data_initials(char *symbol_name, int type, int value, TAG_SYMBOL *tag) {
     int position;
     if (find_symbol_initials(symbol_name) == 0) {
         add_symbol_initials(symbol_name, tag == 0 ? type : STRUCT);
