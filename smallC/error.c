@@ -26,15 +26,15 @@ doerror(ptr) char *ptr; {
         int k;
 	if(finame)
           output_string (finame);
-        output_string (":");
+	output_string (":");
 	output_decimal(srcln);
-        output_string (":");
+	output_string (":");
 	output_decimal(lptr);
-        output_string (": error: ");
-        output_string (ptr);
-        newline ();
+	output_string (": error: ");
+	output_string (ptr);
+	newline ();
 	output_string (line);
-        newline ();
+	newline ();
         k = 0;
         while (k < lptr) {
                 if (line[k] == 9)
