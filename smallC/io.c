@@ -102,6 +102,7 @@ readline () {
                         line[lptr++] = k;
                 }
                 line[lptr] = 0;
+		srcln++;
                 if (k <= 0)
                         if (input2 != NULL) {
                                 input2 = inclstk[--inclsp];

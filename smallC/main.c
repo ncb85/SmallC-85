@@ -10,6 +10,8 @@
 
 FILE *logFile = NULL;
 
+char * finame = NULL;
+
 /* Simple oputs function to replace the ugly fputs(foo, stdout) */
 
 void oputs(char *str)
@@ -124,6 +126,8 @@ main(int argc, char *argv[]) {
  * @return
  */
 compile(char *file) {
+    finame=file;
+    srcln=0;
     if (file == NULL || filename_typeof(file) == 'c') {
         global_table_index = 0;
         local_table_index = NUMBER_OF_GLOBALS;
