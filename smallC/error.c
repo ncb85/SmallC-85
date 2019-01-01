@@ -23,19 +23,12 @@ char    ptr[];
 
 doerror(ptr) char *ptr; {
         int k;
-	if(inclsp == 0){
-		if(finame)
-          		output_string (finame);
-		output_string (":");
-		output_decimal(srcln);
-	}
-	else{
-          	output_string (finamei[inclsp-1]);
-		output_string (":");
-		output_decimal(srclni[inclsp-1]);
-	}
+	if(finame[inclsp]) /* print actual source filename */
+        	output_string (finame[inclsp]);
 	output_string (":");
-	output_decimal(lptr);
+	output_decimal(srcln[inclsp]); /* print source line number*/
+	output_string (":");
+	output_decimal(lptr); /* print column number */ 
 	output_string (": error: ");
 	output_string (ptr);
 	newline ();

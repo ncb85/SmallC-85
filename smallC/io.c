@@ -102,12 +102,7 @@ readline () {
                         line[lptr++] = k;
                 }
                 line[lptr] = 0;
-		if(inclsp == 0){
-			srcln++;
-		}
-		else{
-			srclni[inclsp-1]++;
-		}
+		srcln[inclsp]++; /* increment source line number of actual file */
                 if (k <= 0)
                         if (input2 != NULL) {
                                 input2 = inclstk[--inclsp];

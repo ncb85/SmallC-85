@@ -10,11 +10,9 @@
 
 FILE *logFile = NULL;
 
-char * finame = NULL;
-char finamei [INCLSIZ][20];
+char finame [INCLSIZ+1][20];  /* global input filenames for error messages */
 
-int srcln=0;
-int srclni[INCLSIZ]={0,0,0};
+int srcln[INCLSIZ+1]={0,0,0,0}; /* source file line counters for error messages */
 
 /* Simple oputs function to replace the ugly fputs(foo, stdout) */
 
@@ -130,8 +128,8 @@ main(int argc, char *argv[]) {
  * @return
  */
 compile(char *file) {
-    finame=file;
-    srcln=0;
+    strcpy(finame[0],file); /* copy actual filename to filename array */
+    srcln[0]=0; /* reset source line counter*/
     if (file == NULL || filename_typeof(file) == 'c') {
         global_table_index = 0;
         local_table_index = NUMBER_OF_GLOBALS;
