@@ -18,6 +18,8 @@ extern  char    mline[];
 extern  int     lptr, mptr;
 extern  int     srcln;
 extern  char *  finame;
+extern  int     srclni[];
+extern  char    finamei[INCLSIZ][20];
 
 extern TAG_SYMBOL  tag_table[NUMTAG]; /* start of structure tag table */
 extern int     tag_table_index;   /* ptr to next entry */

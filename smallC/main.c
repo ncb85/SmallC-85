@@ -11,6 +11,10 @@
 FILE *logFile = NULL;
 
 char * finame = NULL;
+char finamei [INCLSIZ][20];
+
+int srcln=0;
+int srclni[INCLSIZ]={0,0,0};
 
 /* Simple oputs function to replace the ugly fputs(foo, stdout) */
 

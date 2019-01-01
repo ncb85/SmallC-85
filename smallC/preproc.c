@@ -35,6 +35,7 @@ FILE* fix_include_name () {
                 strcpy(buf2, DEFLIB);
                 strcat(buf2, buf);
                 fp = fopen(buf2, "r");
+		strcpy(finamei[inclsp],buf2);
         }
         return (fp);
 }

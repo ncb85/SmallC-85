@@ -102,8 +102,12 @@ readline () {
                         line[lptr++] = k;
                 }
                 line[lptr] = 0;
-		if(unit == input)
-		  srcln++;
+		if(inclsp == 0){
+			srcln++;
+		}
+		else{
+			srclni[inclsp-1]++;
+		}
                 if (k <= 0)
                         if (input2 != NULL) {
                                 input2 = inclstk[--inclsp];

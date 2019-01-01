@@ -7,7 +7,6 @@
 #include "defs.h"
 #include "data.h"
 
-int srcln=0;
 
 error (ptr)
 char    ptr[];
@@ -24,10 +23,17 @@ char    ptr[];
 
 doerror(ptr) char *ptr; {
         int k;
-	if(finame)
-          output_string (finame);
-	output_string (":");
-	output_decimal(srcln);
+	if(inclsp == 0){
+		if(finame)
+          		output_string (finame);
+		output_string (":");
+		output_decimal(srcln);
+	}
+	else{
+          	output_string (finamei[inclsp-1]);
+		output_string (":");
+		output_decimal(srclni[inclsp-1]);
+	}
 	output_string (":");
 	output_decimal(lptr);
 	output_string (": error: ");
