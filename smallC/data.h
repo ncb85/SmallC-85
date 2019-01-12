@@ -16,6 +16,8 @@ extern  int     macptr;
 extern  char    line[];
 extern  char    mline[];
 extern  int     lptr, mptr;
+extern  char    finame[INCLSIZ+1][20]; /* global input filenames for error messages */
+extern  int     srcln[]; /* source file line counters for error messages */
 
 extern TAG_SYMBOL  tag_table[NUMTAG]; /* start of structure tag table */
 extern int     tag_table_index;   /* ptr to next entry */

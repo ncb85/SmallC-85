@@ -7,6 +7,7 @@
 #include "defs.h"
 #include "data.h"
 
+
 error (ptr)
 char    ptr[];
 {
@@ -22,10 +23,18 @@ char    ptr[];
 
 doerror(ptr) char *ptr; {
         int k;
-        gen_comment ();
+        if(finame[inclsp]) {/* print actual source filename */
+            output_string (finame[inclsp]);
+        }
+        output_string (":");
+        output_decimal(srcln[inclsp]); /* print source line number*/
+        output_string (":");
+        output_decimal(lptr); /* print column number */ 
+        output_string (": error: ");
+        output_string (ptr);
+        newline ();
         output_string (line);
         newline ();
-        gen_comment ();
         k = 0;
         while (k < lptr) {
                 if (line[k] == 9)
@@ -35,11 +44,6 @@ doerror(ptr) char *ptr; {
                 k++;
         }
         output_byte ('^');
-        newline ();
-        gen_comment ();
-        output_string ("******  ");
-        output_string (ptr);
-        output_string ("  ******");
         newline ();
 }
 

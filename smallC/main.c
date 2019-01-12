@@ -10,6 +10,10 @@
 
 FILE *logFile = NULL;
 
+char finame [INCLSIZ+1][20];  /* global input filenames for error messages */
+
+int srcln[INCLSIZ+1]={0,0,0,0}; /* source file line counters for error messages */
+
 /* Simple oputs function to replace the ugly fputs(foo, stdout) */
 
 void oputs(char *str)
@@ -124,6 +128,8 @@ main(int argc, char *argv[]) {
  * @return
  */
 compile(char *file) {
+    strcpy(finame[0],file); /* copy actual filename to filename array */
+    srcln[0]=0; /* reset source line counter*/
     if (file == NULL || filename_typeof(file) == 'c') {
         global_table_index = 0;
         local_table_index = NUMBER_OF_GLOBALS;
