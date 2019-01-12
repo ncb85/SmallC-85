@@ -35,8 +35,8 @@ FILE* fix_include_name () {
                 strcpy(buf2, DEFLIB);
                 strcat(buf2, buf);
                 fp = fopen(buf2, "r");
-		strcpy(finame[inclsp+1],buf2); /* copy include filename to filename array*/
-    		srcln[inclsp+1]=0; /* reset source line counter*/
+                strcpy(finame[inclsp+1],buf2); /* copy include filename to filename array*/
+                srcln[inclsp+1]=0; /* reset source line counter*/
         }
         return (fp);
 }

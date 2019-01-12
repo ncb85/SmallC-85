@@ -97,12 +97,12 @@ readline () {
                         unit = input;
                 kill ();
                 while ((k = fgetc (unit)) != EOF) {
-                        if ((k == CR) || (k == LF) | (lptr >= LINEMAX))
+                        if ((k == CR) || (k == LF) || (lptr >= LINEMAX))
                                 break;
                         line[lptr++] = k;
                 }
                 line[lptr] = 0;
-		srcln[inclsp]++; /* increment source line number of actual file */
+                srcln[inclsp]++; /* increment source line number of actual file */
                 if (k <= 0)
                         if (input2 != NULL) {
                                 input2 = inclstk[--inclsp];
