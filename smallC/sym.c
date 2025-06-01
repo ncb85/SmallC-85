@@ -6,6 +6,15 @@
 #include "defs.h"
 #include "data.h"
 
+#include "sym.h"
+#include "code8080.h"
+#include "gen.h"
+#include "initials.h"
+#include "io.h"
+#include "lex.h"
+#include "primary.h"
+#include "struct.h"
+
 /**
  * declare a static variable
  * @param type
@@ -16,7 +25,7 @@
  * @param is_struct struct or union or no meaning
  * @return
  */
-declare_global(int type, int storage, TAG_SYMBOL *mtag, int otag, int is_struct)
+void declare_global(int type, int storage, TAG_SYMBOL *mtag, int otag, int is_struct)
 {
     int     dim, identity;
     char    sname[NAMESIZE];
@@ -137,7 +146,7 @@ int initials(char *symbol_name, int type, int identity, int dim, int otag) {
  * initialise structure
  * @param tag
  */
-struct_init(TAG_SYMBOL *tag, char *symbol_name) {
+void struct_init(TAG_SYMBOL *tag, char *symbol_name) {
     int dim ;
     int member_idx;
 
@@ -164,7 +173,7 @@ struct_init(TAG_SYMBOL *tag, char *symbol_name) {
  * @param tag
  * @return
  */
-init(char *symbol_name, int type, int identity, int *dim, TAG_SYMBOL *tag) {
+int init(char *symbol_name, int type, int identity, int *dim, TAG_SYMBOL *tag) {
     int value, number_of_chars;
     if(identity == POINTER) {
         error("cannot assign to pointer");
@@ -198,7 +207,7 @@ init(char *symbol_name, int type, int identity, int *dim, TAG_SYMBOL *tag) {
  * @param stclass
  * @param otag index of tag in tag_table
  */
-declare_local(int typ, int stclass, int otag) {
+void declare_local(int typ, int stclass, int otag) {
     int     k, j;
     char    sname[NAMESIZE];
 
@@ -269,7 +278,7 @@ declare_local(int typ, int stclass, int otag) {
  * get required array size. [xx]
  * @return array size
  */
-needsub() {
+int needsub() {
     int num[1];
 
     if (match ("]"))
@@ -360,9 +369,7 @@ int add_global (char *sname, int identity, int type, int offset, int storage) {
  * @param storage_class
  * @return
  */
-int add_local(char *sname, int identity, int type, int offset,
-    int storage_class)
-{
+int add_local(char *sname, int identity, int type, int offset, int storage_class) {
     int k;
     SYMBOL *symbol;
     char *buffer_ptr;
@@ -399,7 +406,7 @@ int add_local(char *sname, int identity, int type, int offset,
 /**
  * test if next input string is legal symbol name
  */
-symname(char *sname) {
+int symname(char *sname) {
     int k;
 
     blanks();
@@ -415,7 +422,7 @@ symname(char *sname) {
 /**
  * print error message
  */
-illname() {
+void illname() {
     error ("illegal symbol name");
 }
 
@@ -424,7 +431,7 @@ illname() {
  * @param symbol_name
  * @return
  */
-multidef (char *symbol_name) {
+void multidef (char *symbol_name) {
     error ("already defined");
     gen_comment ();
     output_string (symbol_name);

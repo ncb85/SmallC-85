@@ -7,10 +7,11 @@
 #include "defs.h"
 #include "data.h"
 
+#include "error.h"
+#include "code8080.h"
+#include "gen.h"
 
-error (ptr)
-char    ptr[];
-{
+void error (char ptr[]) {
         FILE *tempfile;
 
         tempfile = output;
@@ -21,7 +22,7 @@ char    ptr[];
         errcnt++;
 }
 
-doerror(ptr) char *ptr; {
+void doerror(char *ptr) {
         int k;
         if(finame[inclsp]) {/* print actual source filename */
             output_string (finame[inclsp]);

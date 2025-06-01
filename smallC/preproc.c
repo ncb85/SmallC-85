@@ -8,6 +8,14 @@
 #include "defs.h"
 #include "data.h"
 
+#include "preproc.h"
+#include "code8080.h"
+#include "error.h"
+#include "gen.h"
+#include "io.h"
+#include "lex.h"
+#include "sym.h"
+
 /**
  * remove "brackets" surrounding include file name
  * @see DEFLIB
@@ -44,8 +52,7 @@ FILE* fix_include_name () {
 /**
  * open an include file
  */
-doinclude ()
-{
+void doinclude () {
         char    *p;
         FILE    *inp2;
 
@@ -62,7 +69,6 @@ doinclude ()
                 error ("Could not open include file");
         }
         kill ();
-
 }
 
 /**
@@ -70,8 +76,7 @@ doinclude ()
  * enters mode where assembly language statements are passed
  * intact through parser
  */
-doasm ()
-{
+void doasm () {
         cmode = 0;
         FOREVER {
                 readline ();
@@ -84,16 +89,13 @@ doasm ()
         }
         kill ();
         cmode = 1;
-
 }
 
-dodefine ()
-{
+void dodefine () {
         addmac();
 }
 
-doundef ()
-{
+void doundef () {
         int     mp;
         char    sname[NAMESIZE];
 
@@ -106,18 +108,14 @@ doundef ()
         if (mp = findmac(sname))
                 delmac(mp);
         kill();
-
 }
 
-preprocess ()
-{
+void preprocess () {
         if (ifline()) return;
         while (cpp());
 }
 
-doifdef (ifdef)
-int ifdef;
-{
+void doifdef (int ifdef) {
         char sname[NAMESIZE];
         int k;
 
@@ -126,11 +124,9 @@ int ifdef;
         if (skiplevel) return;
         k = symname(sname) && findmac(sname);
         if (k != ifdef) skiplevel = iflevel;
-
 }
 
-ifline()
-{
+int ifline() {
         FOREVER {
                 readline();
                 if (feof(input)) return(1);
@@ -155,21 +151,17 @@ ifline()
                 }
                 if (!skiplevel) return(0);
         }
-
 }
 
-noiferr()
-{
+void noiferr() {
         error("no matching #if...");
-
 }
 
 /**
  * preprocess - copies mline to line with special treatment of preprocess cmds
  * @return
  */
-cpp ()
-{
+int cpp () {
         int     k;
         char    c, sname[NAMESIZE];
         int     tog;
@@ -266,12 +258,9 @@ cpp ()
         while (line[lptr++] = mline[mptr++]);
         lptr = 0;
         return(cpped);
-
 }
 
-keepch (c)
-char    c;
-{
+int keepch (char c) {
         mline[mptr] = c;
         if (mptr < MPMAX)
                 mptr++;
@@ -279,16 +268,13 @@ char    c;
 
 }
 
-defmac(s)
-char *s;
-{
+void defmac(char *s) {
         kill();
         strcpy(line, s);
         addmac();
 }
 
-addmac ()
-{
+void addmac () {
         char    sname[NAMESIZE];
         int     k;
         int     mp;
@@ -310,7 +296,6 @@ addmac ()
         while (putmac(remove_one_line_comment(gch ())));
         if (macptr >= MACMAX)
                 error ("macro table full");
-
 }
 
 /**
@@ -318,7 +303,7 @@ addmac ()
  * @param c
  * @return
  */
-remove_one_line_comment(c) char c; {
+int remove_one_line_comment(char c) {
     if ((c == '/') && (ch() == '/')) {
         while(gch());
         return 0;
@@ -327,25 +312,19 @@ remove_one_line_comment(c) char c; {
     }
 }
 
-delmac(mp) int mp; {
+void delmac(int mp) {
         --mp; --mp;     /* step over previous null */
         while (mp >= 0 && macq[mp]) macq[mp--] = '%';
-
 }
 
-putmac (c)
-char    c;
-{
+int putmac (char c) {
         macq[macptr] = c;
         if (macptr < MACMAX)
                 macptr++;
         return (c);
-
 }
 
-findmac (sname)
-char    *sname;
-{
+int findmac (char *sname) {
         int     k;
 
         k = 0;
@@ -358,13 +337,9 @@ char    *sname;
                 while (macq[k++]);
         }
         return (0);
-
 }
 
-toggle (name, onoff)
-char    name;
-int     onoff;
-{
+void toggle (char name, int onoff) {
         switch (name) {
         case 'C':
                 ctext = onoff;

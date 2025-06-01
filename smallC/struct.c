@@ -7,6 +7,10 @@
 #include "defs.h"
 #include "data.h"
 
+#include"error.h"
+#include "lex.h"
+#include "main.h"
+
 /**
  * look up a tag in tag table by name
  * @param sname
@@ -53,7 +57,7 @@ SYMBOL *find_member(TAG_SYMBOL *tag, char *sname) {
  * @param storage
  * @return
  */
-add_member(char *sname, char identity, char type, int offset, int storage_class, int member_size) {
+int add_member(char *sname, char identity, char type, int offset, int storage_class, int member_size) {
     char *buffer_ptr;
     SYMBOL *symbol;
     if (member_table_index >= NUMMEMB) {

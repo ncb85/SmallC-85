@@ -6,7 +6,17 @@
 #include "defs.h"
 #include "data.h"
 
-primary (LVALUE *lval) {
+#include "primary.h"
+#include "code8080.h"
+#include "error.h"
+#include "expr.h"
+#include "gen.h"
+#include "io.h"
+#include "lex.h"
+#include "sym.h"
+#include "struct.h"
+
+int primary (LVALUE *lval) {
     char    sname[NAMESIZE];
     int     num[1], k, symbol_table_idx, offset, reg, otag;
     SYMBOL *symbol;
@@ -146,7 +156,7 @@ primary (LVALUE *lval) {
  * @param val2
  * @return
  */
-dbltest (LVALUE *val1, LVALUE *val2) {
+int dbltest (LVALUE *val1, LVALUE *val2) {
     if (val1 == NULL)
         return (FALSE);
     if (val1->ptr_type) {
@@ -165,7 +175,7 @@ dbltest (LVALUE *val1, LVALUE *val2) {
  * @param lval2
  * @return
  */
-result (LVALUE *lval, LVALUE *lval2) {
+void result (LVALUE *lval, LVALUE *lval2) {
     if (lval->ptr_type && lval2->ptr_type)
         lval->ptr_type = 0;
     else if (lval2->ptr_type) {
@@ -175,7 +185,7 @@ result (LVALUE *lval, LVALUE *lval2) {
     }
 }
 
-constant (int val[]) {
+int constant (int val[]) {
     if (number (val))
         gen_immediate ();
     else if (quoted_char (val))
@@ -191,7 +201,7 @@ constant (int val[]) {
     return (1);
 }
 
-number (int val[]) {
+int number (int val[]) {
     int     k, minus, base;
     char    c;
 
@@ -236,7 +246,7 @@ number (int val[]) {
  * @param value returns the char found
  * @return 1 if we have, 0 otherwise
  */
-quoted_char (int *value) {
+int quoted_char (int *value) {
     int     k;
     char    c;
 
@@ -257,7 +267,7 @@ quoted_char (int *value) {
  * @param position returns beginning of the string
  * @return 1 if such string found, 0 otherwise
  */
-quoted_string (int *position) {
+int quoted_string (int *position) {
     char    c;
 
     if (!match ("\""))
@@ -284,7 +294,7 @@ quoted_string (int *position) {
 /**
  * decode special characters (preceeded by back slashes)
  */
-spechar() {
+int spechar() {
     char c;
     c = ch();
 
@@ -335,7 +345,7 @@ void callfunction (char *ptr) {
     stkp = gen_modify_stack (stkp + nargs);
 }
 
-needlval () {
+void needlval () {
     error ("must be lvalue");
 }
 

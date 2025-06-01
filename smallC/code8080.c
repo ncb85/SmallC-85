@@ -7,6 +7,12 @@
 #include "defs.h"
 #include "data.h"
 
+#include "code8080.h"
+#include "gen.h"
+#include "main.h"
+#include "preproc.h"
+#include "primary.h"
+
 /*      Define ASNM and LDNM to the names of the assembler and linker
         respectively */
 
@@ -30,6 +36,11 @@ void header () {
     newline ();
     output_line ("\t;program area SMALLC_GENERATED is RELOCATABLE");
     output_line ("\t.module SMALLC_GENERATED");
+    if (uflag) {
+        output_line ("\t.8085x");
+    } else {
+        output_line ("\t.8080");
+    }
     output_line ("\t.list   (err, loc, bin, eqt, cyc, lin, src, lst, md)");
     output_line ("\t.nlist  (pag)");
 }
@@ -38,7 +49,7 @@ void header () {
  * prints new line
  * @return
  */
-newline () {
+void newline () {
 #if __CYGWIN__ == 1
     output_byte (CR);
 #endif
@@ -120,7 +131,7 @@ void fpubext(SYMBOL *scptr) {
  * Output a decimal number to the assembler file, with # prefix
  * @param num
  */
-void output_number(num) int num; {
+void output_number(int num) {
     output_byte('#');
     output_decimal(num);
 }
@@ -244,7 +255,7 @@ void gen_get_indirect(char typeobj, int reg) {
 /**
  * swap the primary and secondary registers
  */
-gen_swap() {
+void gen_swap() {
     output_line("xchg");
 }
 
@@ -252,14 +263,14 @@ gen_swap() {
  * print partial instruction to get an immediate value into
  * the primary register
  */
-gen_immediate() {
+void gen_immediate() {
     output_with_tab ("lxi \th,");
 }
 
 /**
  * push the primary register onto the stack
  */
-gen_push(int reg) {
+void gen_push(int reg) {
     if (reg & DE_REG) {
         output_line ("push\td");
         stkp = stkp - INTSIZE;
@@ -272,7 +283,7 @@ gen_push(int reg) {
 /**
  * pop the top of the stack into the secondary register
  */
-gen_pop() {
+void gen_pop() {
     output_line ("pop \td");
     stkp = stkp + INTSIZE;
 }
@@ -280,7 +291,7 @@ gen_pop() {
 /**
  * swap the primary register and the top of the stack
  */
-gen_swap_stack() {
+void gen_swap_stack() {
     output_line ("xthl");
 }
 
@@ -288,7 +299,7 @@ gen_swap_stack() {
  * call the specified subroutine name
  * @param sname subroutine name
  */
-gen_call(char *sname) {
+void gen_call(char *sname) {
     output_with_tab ("call\t");
     output_string (sname);
     newline ();
@@ -297,7 +308,7 @@ gen_call(char *sname) {
 /**
  * declare entry point
  */
-declare_entry_point(char *symbol_name) {
+void declare_entry_point(char *symbol_name) {
     output_string(symbol_name);
     output_label_terminator();
     /*newline();*/
@@ -306,14 +317,14 @@ declare_entry_point(char *symbol_name) {
 /**
  * return from subroutine
  */
-gen_ret() {
+void gen_ret() {
     output_line ("ret");
 }
 
 /**
  * perform subroutine call to value on top of stack
  */
-callstk() {
+void callstk() {
     gen_immediate ();
     output_string ("#.+5");
     newline ();
@@ -326,7 +337,7 @@ callstk() {
  * jump to specified internal label number
  * @param label the label
  */
-gen_jump(label)
+void gen_jump(label)
 int     label;
 {
     output_with_tab ("jmp \t");
@@ -339,7 +350,7 @@ int     label;
  * @param label the label
  * @param ft if true jnz is generated, jz otherwise
  */
-gen_test_jump(label, ft)
+void gen_test_jump(label, ft)
 int     label,
         ft;
 {
@@ -356,21 +367,21 @@ int     label,
 /**
  * print pseudo-op  to define a byte
  */
-gen_def_byte() {
+void gen_def_byte() {
     output_with_tab (".db\t");
 }
 
 /**
  * print pseudo-op to define storage
  */
-gen_def_storage() {
+void gen_def_storage() {
     output_with_tab (".ds\t");
 }
 
 /**
  * print pseudo-op to define a word
  */
-gen_def_word() {
+void gen_def_word() {
     output_with_tab (".dw\t");
 }
 
@@ -378,7 +389,7 @@ gen_def_word() {
  * modify the stack pointer to the new value indicated
  * @param newstkp new value
  */
-gen_modify_stack(int newstkp) {
+int gen_modify_stack(int newstkp) {
     int k;
 
     k = newstkp - stkp;
@@ -422,14 +433,14 @@ gen_modify_stack(int newstkp) {
 /**
  * multiply the primary register by INTSIZE
  */
-gen_multiply_by_two() {
+void gen_multiply_by_two() {
     output_line ("dad \th");
 }
 
 /**
  * divide the primary register by INTSIZE, never used
  */
-gen_divide_by_two() {
+void gen_divide_by_two() {
     gen_push(HL_REG);        /* push primary in prep for gasr */
     gen_immediate ();
     output_number (1);
@@ -440,7 +451,7 @@ gen_divide_by_two() {
 /**
  * Case jump instruction
  */
-gen_jump_case() {
+void gen_jump_case() {
     output_with_tab ("jmp \tcccase");
     newline ();
 }
@@ -451,7 +462,7 @@ gen_jump_case() {
  * @param lval
  * @param lval2
  */
-gen_add(lval,lval2) int *lval,*lval2; {
+void gen_add(lval,lval2) int *lval,*lval2; {
     gen_pop ();
     if (dbltest (lval2, lval)) {
         gen_swap ();
@@ -464,7 +475,7 @@ gen_add(lval,lval2) int *lval,*lval2; {
 /**
  * subtract the primary register from the secondary
  */
-gen_sub() {
+void gen_sub() {
     gen_pop ();
     gen_call ("ccsub");
 }
@@ -472,7 +483,7 @@ gen_sub() {
 /**
  * multiply the primary and secondary registers (result in primary)
  */
-gen_mult() {
+void gen_mult() {
     gen_pop();
     gen_call ("ccmul");
 }
@@ -481,7 +492,7 @@ gen_mult() {
  * divide the secondary register by the primary
  * (quotient in primary, remainder in secondary)
  */
-gen_div() {
+void gen_div() {
     gen_pop();
     gen_call ("ccdiv");
 }
@@ -490,7 +501,7 @@ gen_div() {
  * unsigned divide the secondary register by the primary
  * (quotient in primary, remainder in secondary)
  */
-gen_udiv() {
+void gen_udiv() {
     gen_pop();
     gen_call ("ccudiv");
 }
@@ -500,7 +511,7 @@ gen_udiv() {
  * divided by the primary register
  * (remainder in primary, quotient in secondary)
  */
-gen_mod() {
+void gen_mod() {
     gen_div ();
     gen_swap ();
 }
@@ -510,7 +521,7 @@ gen_mod() {
  * divided by the primary register
  * (remainder in primary, quotient in secondary)
  */
-gen_umod() {
+void gen_umod() {
     gen_udiv ();
     gen_swap ();
 }
@@ -518,7 +529,7 @@ gen_umod() {
 /**
  * inclusive 'or' the primary and secondary registers
  */
-gen_or() {
+void gen_or() {
     gen_pop();
     gen_call ("ccor");
 }
@@ -526,7 +537,7 @@ gen_or() {
 /**
  * exclusive 'or' the primary and secondary registers
  */
-gen_xor() {
+void gen_xor() {
     gen_pop();
     gen_call ("ccxor");
 }
@@ -534,7 +545,7 @@ gen_xor() {
 /**
  * 'and' the primary and secondary registers
  */
-gen_and() {
+void gen_and() {
     gen_pop();
     gen_call ("ccand");
 }
@@ -543,7 +554,7 @@ gen_and() {
  * arithmetic shift right the secondary register the number of
  * times in the primary register (results in primary register)
  */
-gen_arithm_shift_right() {
+void gen_arithm_shift_right() {
     gen_pop();
     gen_call ("ccasr");
 }
@@ -552,7 +563,7 @@ gen_arithm_shift_right() {
  * logically shift right the secondary register the number of
  * times in the primary register (results in primary register)
  */
-gen_logical_shift_right() {
+void gen_logical_shift_right() {
     gen_pop();
     gen_call ("cclsr");
 }
@@ -561,7 +572,7 @@ gen_logical_shift_right() {
  * arithmetic shift left the secondary register the number of
  * times in the primary register (results in primary register)
  */
-gen_arithm_shift_left() {
+void gen_arithm_shift_left() {
     gen_pop ();
     gen_call ("ccasl");
 }
@@ -569,35 +580,35 @@ gen_arithm_shift_left() {
 /**
  * two's complement of primary register
  */
-gen_twos_complement() {
+void gen_twos_complement() {
     gen_call ("ccneg");
 }
 
 /**
  * logical complement of primary register
  */
-gen_logical_negation() {
+void gen_logical_negation() {
     gen_call ("cclneg");
 }
 
 /**
  * one's complement of primary register
  */
-gen_complement() {
+void gen_complement() {
     gen_call ("cccom");
 }
 
 /**
  * Convert primary value into logical value (0 if 0, 1 otherwise)
  */
-gen_convert_primary_reg_value_to_bool() {
+void gen_convert_primary_reg_value_to_bool() {
     gen_call ("ccbool");
 }
 
 /**
  * increment the primary register by 1 if char, INTSIZE if int
  */
-gen_increment_primary_reg(LVALUE *lval) {
+void gen_increment_primary_reg(LVALUE *lval) {
     switch (lval->ptr_type) {
         case STRUCT:
             gen_immediate2();
@@ -617,7 +628,7 @@ gen_increment_primary_reg(LVALUE *lval) {
 /**
  * decrement the primary register by one if char, INTSIZE if int
  */
-gen_decrement_primary_reg(LVALUE *lval) {
+void gen_decrement_primary_reg(LVALUE *lval) {
     output_line("dcx \th");
     switch (lval->ptr_type) {
         case CINT:
@@ -654,7 +665,7 @@ gen_decrement_primary_reg(LVALUE *lval) {
 /**
  * equal
  */
-gen_equal() {
+void gen_equal() {
     gen_pop();
     gen_call ("cceq");
 }
@@ -662,7 +673,7 @@ gen_equal() {
 /**
  * not equal
  */
-gen_not_equal() {
+void gen_not_equal() {
     gen_pop();
     gen_call ("ccne");
 }
@@ -670,7 +681,7 @@ gen_not_equal() {
 /**
  * less than (signed)
  */
-gen_less_than() {
+void gen_less_than() {
     gen_pop();
     gen_call ("cclt");
 }
@@ -678,7 +689,7 @@ gen_less_than() {
 /**
  * less than or equal (signed)
  */
-gen_less_or_equal() {
+void gen_less_or_equal() {
     gen_pop();
     gen_call ("ccle");
 }
@@ -686,7 +697,7 @@ gen_less_or_equal() {
 /**
  * greater than (signed)
  */
-gen_greater_than() {
+void gen_greater_than() {
     gen_pop();
     gen_call ("ccgt");
 }
@@ -694,7 +705,7 @@ gen_greater_than() {
 /**
  * greater than or equal (signed)
  */
-gen_greater_or_equal() {
+void gen_greater_or_equal() {
     gen_pop();
     gen_call ("ccge");
 }
@@ -702,7 +713,7 @@ gen_greater_or_equal() {
 /**
  * less than (unsigned)
  */
-gen_unsigned_less_than() {
+void gen_unsigned_less_than() {
     gen_pop();
     gen_call ("ccult");
 }
@@ -710,7 +721,7 @@ gen_unsigned_less_than() {
 /**
  * less than or equal (unsigned)
  */
-gen_unsigned_less_or_equal() {
+void gen_unsigned_less_or_equal() {
     gen_pop();
     gen_call ("ccule");
 }
@@ -718,7 +729,7 @@ gen_unsigned_less_or_equal() {
 /**
  * greater than (unsigned)
  */
-gen_usigned_greater_than() {
+void gen_usigned_greater_than() {
     gen_pop();
     gen_call ("ccugt");
 }
@@ -726,7 +737,7 @@ gen_usigned_greater_than() {
 /**
  * greater than or equal (unsigned)
  */
-gen_unsigned_greater_or_equal() {
+void gen_unsigned_greater_or_equal() {
     gen_pop();
     gen_call ("ccuge");
 }
@@ -748,7 +759,7 @@ char *inclib() {
  * Squirrel away argument count in a register that modstk doesn't touch.
  * @param d
  */
-gnargs(d)
+void gnargs(d)
 int     d; {
     output_with_tab ("mvi \ta,");
     output_number(d);
@@ -767,7 +778,6 @@ char    *s; {
 #else
         return(0);
 #endif
-
 }
 
 int link() {
@@ -782,7 +792,7 @@ int link() {
  * print partial instruction to get an immediate value into
  * the secondary register
  */
-gen_immediate2() {
+void gen_immediate2() {
     output_with_tab ("lxi \td,");
 }
 
@@ -790,7 +800,7 @@ gen_immediate2() {
  * add offset to primary register
  * @param val the value
  */
-add_offset(int val) {
+void add_offset(int val) {
     gen_immediate2();
     output_number(val);
     newline();
@@ -802,7 +812,7 @@ add_offset(int val) {
  * @param type
  * @param size
  */
-gen_multiply(int type, int size) {
+void gen_multiply(int type, int size) {
     switch (type) {
         case CINT:
         case UINT:

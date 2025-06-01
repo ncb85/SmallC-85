@@ -6,6 +6,19 @@
 #include "defs.h"
 #include "data.h"
 
+#include "stmt.h"
+#include "code8080.h"
+#include "error.h"
+#include "expr.h"
+#include "io.h"
+#include "lex.h"
+#include "gen.h"
+#include "preproc.h"
+#include "primary.h"
+#include "struct.h"
+#include "sym.h"
+#include "while.h"
+
 /**
  * statement parser
  * called whenever syntax requires a statement.  this routine
@@ -15,7 +28,7 @@
  * "declaration_list" is omitted)
  * @return statement type
  */
-statement (int func) {
+int statement (int func) {
     if ((ch () == 0) & feof (input))
         return (0);
     lastst = 0;
@@ -35,7 +48,7 @@ statement (int func) {
 /**
  * declaration
  */
-statement_declare() {
+int statement_declare() {
     if (amatch("register", 8))
         do_local_declares(DEFAUTO);
     else if (amatch("auto", 4))
@@ -53,7 +66,7 @@ statement_declare() {
  * @param stclass
  * @return
  */
-do_local_declares(int stclass) {
+int do_local_declares(int stclass) {
     int type = 0;
     int otag;   /* tag of struct object being declared */
     int sflag;  /* TRUE for struct definition, zero for union */
@@ -82,7 +95,7 @@ do_local_declares(int stclass) {
 /**
  * non-declaration statement
  */
-do_statement () {
+void do_statement () {
     if (amatch ("if", 2)) {
         doif ();
         lastst = STIF;
@@ -142,7 +155,7 @@ do_statement () {
  * 'func' is true if we are in a "function_statement", which
  * must contain "statement_list"
  */
-do_compound(int func) {
+void do_compound(int func) {
         int     decls;
 
         decls = YES;
@@ -162,7 +175,7 @@ do_compound(int func) {
 /**
  * "if" statement
  */
-doif() {
+void doif() {
         int     fstkp, flab1, flab2;
         int     flev;
 
@@ -188,7 +201,7 @@ doif() {
 /**
  * "while" statement
  */
-dowhile() {
+void dowhile() {
         WHILE ws;
 
         ws.symbol_idx = local_table_index;
@@ -210,7 +223,7 @@ dowhile() {
 /**
  * "do" statement
  */
-dodo() {
+void dodo() {
         WHILE ws;
 
         ws.symbol_idx = local_table_index;
@@ -237,7 +250,7 @@ dodo() {
 /**
  * "for" statement
  */
-dofor() {
+void dofor() {
         WHILE ws;
         WHILE *pws;
 
@@ -282,7 +295,7 @@ dofor() {
 /**
  * "switch" statement
  */
-doswitch() {
+void doswitch() {
         WHILE ws;
         WHILE *ptr;
 
@@ -316,7 +329,7 @@ doswitch() {
 /**
  * "case" label
  */
-docase() {
+void docase() {
         int     val;
 
         val = 0;
@@ -334,7 +347,7 @@ docase() {
 /**
  * "default" label
  */
-dodefault() {
+void dodefault() {
         WHILE *ptr;
         int        lab;
 
@@ -350,7 +363,7 @@ dodefault() {
 /**
  * "return" statement
  */
-doreturn() {
+void doreturn() {
         if (endst () == 0)
                 expression (YES);
         gen_jump(fexitlab);
@@ -359,7 +372,7 @@ doreturn() {
 /**
  * "break" statement
  */
-dobreak() {
+void dobreak() {
         WHILE *ptr;
 
         if ((ptr = readwhile ()) == 0)
@@ -371,7 +384,7 @@ dobreak() {
 /**
  * "continue" statement
  */
-docont() {
+void docont() {
         WHILE *ptr; /*int     *ptr; */
 
         if ((ptr = findwhile ()) == 0)
@@ -386,7 +399,7 @@ docont() {
 /**
  * dump switch table
  */
-dumpsw(WHILE *ws) {
+void dumpsw(WHILE *ws) {
         int     i,j;
 
         data_segment_gdata ();

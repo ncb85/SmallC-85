@@ -6,10 +6,19 @@
 #include "defs.h"
 #include "data.h"
 
+#include "expr.h"
+#include "code8080.h"
+#include "error.h"
+#include "gen.h"
+#include "io.h"
+#include "lex.h"
+#include "primary.h"
+#include "sym.h"
+
 /**
  * unsigned operand ?
  */
-nosign(LVALUE *is) {
+int nosign(LVALUE *is) {
     SYMBOL *ptr;
 
     if((is->ptr_type) ||
@@ -26,7 +35,7 @@ nosign(LVALUE *is) {
  * @param comma
  * @return
  */
-expression(int comma) {
+void expression(int comma) {
     LVALUE lval;
     int k;
 
@@ -44,7 +53,7 @@ expression(int comma) {
  * @param lval
  * @return
  */
-hier1 (LVALUE *lval) {
+int hier1 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
     char    fc;
@@ -84,7 +93,7 @@ hier1 (LVALUE *lval) {
             gen_push(k);
             k = hier1 (lval2);
             if (k & FETCH)
-                k = rvalue(lval2);
+                k = rvalue(lval2, k);
             switch (fc) {
                 case '-':       {
                     if (dbltest(lval,lval2)) {
@@ -141,7 +150,7 @@ hier1 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier1a (LVALUE *lval) {
+int hier1a (LVALUE *lval) {
     int     k, lab1, lab2;
     LVALUE lval2[1];
 
@@ -181,7 +190,7 @@ hier1a (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier1b (LVALUE *lval) {
+int hier1b (LVALUE *lval) {
     int     k, lab;
     LVALUE lval2[1];
 
@@ -210,7 +219,7 @@ hier1b (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier1c (LVALUE *lval) {
+int hier1c (LVALUE *lval) {
     int     k, lab;
     LVALUE lval2[1];
 
@@ -239,7 +248,7 @@ hier1c (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier2 (LVALUE *lval) {
+int hier2 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -268,7 +277,7 @@ hier2 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier3 (LVALUE *lval) {
+int hier3 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -297,7 +306,7 @@ hier3 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier4 (LVALUE *lval) {
+int hier4 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -327,7 +336,7 @@ hier4 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier5 (LVALUE *lval) {
+int hier5 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -362,7 +371,7 @@ hier5 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier6 (LVALUE *lval) {
+int hier6 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -434,7 +443,7 @@ hier6 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier7 (LVALUE *lval) {
+int hier7 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -476,7 +485,7 @@ hier7 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier8 (LVALUE *lval) {
+int hier8 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -527,7 +536,7 @@ hier8 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier9 (LVALUE *lval) {
+int hier9 (LVALUE *lval) {
     int     k;
     LVALUE lval2[1];
 
@@ -576,7 +585,7 @@ hier9 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier10 (LVALUE *lval) {
+int hier10 (LVALUE *lval) {
     int     k;
     SYMBOL *ptr;
 
@@ -695,7 +704,7 @@ hier10 (LVALUE *lval) {
  * @param lval
  * @return 0 or 1, fetch or no fetch
  */
-hier11(LVALUE *lval) {
+int hier11(LVALUE *lval) {
     int     direct, k;
     SYMBOL *ptr;
     char    sname[NAMESIZE];

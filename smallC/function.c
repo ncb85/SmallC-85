@@ -6,6 +6,16 @@
 #include "defs.h"
 #include "data.h"
 
+#include "function.h"
+#include "code8080.h"
+#include "error.h"
+#include "gen.h"
+#include "io.h"
+#include "lex.h"
+#include "stmt.h"
+#include "struct.h"
+#include "sym.h"
+
 int argtop;
 
 /**
@@ -14,7 +24,7 @@ int argtop;
  * of what follows
  * modified version.  p.l. woods
  */
-newfunc() {
+void newfunc() {
     char n[NAMESIZE];
     int idx, type;
     fexitlab = getlabel();
@@ -93,7 +103,7 @@ newfunc() {
  * @param t argument type (char, int)
  * @return
  */
-getarg(int t) {
+void getarg(int t) {
     int j, legalname, address, argptr, otag;
     char n[NAMESIZE];
 
@@ -150,7 +160,7 @@ getarg(int t) {
     }
 }
 
-doAnsiArguments() {
+int doAnsiArguments() {
     int type;
     type = get_type();
     if (type == 0) {
@@ -176,7 +186,7 @@ doAnsiArguments() {
     }
 }
 
-doLocalAnsiArgument(int type) {
+void doLocalAnsiArgument(int type) {
     char symbol_name[NAMESIZE];
     int identity, address, argptr, ptr, otag;
     /* if a struct is being passed, its tag must be read in before checking if

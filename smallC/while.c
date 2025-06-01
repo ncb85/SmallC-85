@@ -7,7 +7,11 @@
 #include "defs.h"
 #include "data.h"
 
-addwhile (WHILE *ptr) {
+#include "code8080.h"
+#include "error.h"
+#include "gen.h"
+
+void addwhile (WHILE *ptr) {
 /*int     ptr[];
     int     k;
 
@@ -22,7 +26,7 @@ addwhile (WHILE *ptr) {
     ws[while_table_index++] = *ptr;
 }
 
-delwhile () {
+void delwhile () {
     if (readwhile ()) {
         /*wsptr = wsptr - WSSIZ;*/
         while_table_index--;
@@ -70,7 +74,7 @@ WHILE *readswitch () {
     return (0);
 }
 
-addcase (int val) {
+void addcase (int val) {
     int     lab;
 
     if (swstp == SWSTSZ)

@@ -1,6 +1,9 @@
 /*
  * File defs.h: 2.1 (83/03/21,02:07:20)
  */
+// _DEFS_
+#ifndef _DEFS_
+#define _DEFS_
 
 /* Intel 8080 architecture defs */
 #define INTSIZE 2
@@ -211,3 +214,4 @@ struct initials_table {
  */
 SYMBOL *find_member(TAG_SYMBOL *tag, char *sname);
 
+#endif // _DEFS_

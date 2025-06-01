@@ -8,10 +8,15 @@
 #include "defs.h"
 #include "data.h"
 
+#include "io.h"
+#include "code8080.h"
+#include "gen.h"
+#include "preproc.h"
+
 /*
  *      open input file
  */
-openin (p) char *p;
+int openin (p) char *p;
 {
         strcpy(fname, p);
         fixname (fname);
@@ -23,13 +28,12 @@ openin (p) char *p;
         }
         kill ();
         return (YES);
-
 }
 
 /*
  *      open output file
  */
-openout ()
+int openout ()
 {
         outfname (fname);
         if ((output = fopen (fname, "w")) == NULL) {
@@ -38,37 +42,34 @@ openout ()
         }
         kill ();
         return (YES);
-
 }
 
 /*
  *      change input filename to output filename
  */
-outfname (s)
+void outfname (s)
 char    *s;
 {
         while (*s)
                 s++;
         *--s = 's';
-
 }
 
 /**
  * remove NL from filenames
  */
-fixname (s)
+void fixname (s)
 char    *s;
 {
         while (*s && *s++ != LF);
         if (!*s) return;
         *(--s) = 0;
-
 }
 
 /**
  * check that filename is "*.c"
  */
-checkname (s)
+int checkname (s)
 char    *s;
 {
         while (*s)
@@ -78,15 +79,14 @@ char    *s;
         if (*--s != '.')
                 return (NO);
         return (YES);
-
 }
 
-kill () {
+void kill () {
         lptr = 0;
         line[lptr] = 0;
 }
 
-readline () {
+void readline () {
         int     k;
         FILE    *unit;
 
@@ -120,7 +120,7 @@ readline () {
         }
 }
 
-inbyte () {
+int inbyte () {
         while (ch () == 0) {
                 if (feof (input))
                         return (0);
@@ -129,7 +129,7 @@ inbyte () {
         return (gch ());
 }
 
-inchar () {
+int inchar () {
         if (ch () == 0)
                 readline ();
         if (feof (input))
@@ -141,7 +141,7 @@ inchar () {
  * gets current char from input line and moves to the next one
  * @return current char
  */
-gch () {
+int gch () {
         if (ch () == 0)
                 return (0);
         else
@@ -152,7 +152,7 @@ gch () {
  * returns next char
  * @return next char
  */
-nch () {
+int nch () {
         if (ch () == 0)
                 return (0);
         else
@@ -163,7 +163,7 @@ nch () {
  * returns current char
  * @return current char
  */
-ch () {
+int ch () {
         return (line[lptr] & 127);
 }
 
@@ -171,7 +171,7 @@ ch () {
  *      print a carriage return and a string only to console
  *
  */
-pl (str)
+void pl (str)
 char    *str;
 {
         int     k;
