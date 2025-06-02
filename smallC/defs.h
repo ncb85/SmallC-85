@@ -54,7 +54,7 @@ struct tag_symbol {
 #ifdef SMALL_C
 #define NULL_TAG 0
 #else
-#define NULL_TAG (TAG_SYMBOL *)0
+#define NULL_TAG 0
 #endif
 
 /* Define the structure member table parameters */
