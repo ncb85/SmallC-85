@@ -196,7 +196,7 @@ void gen_jump_case();
  * @param lval
  * @param lval2
  */
-void gen_add(int *lval, int *lval2);
+void gen_add(LVALUE *lval, LVALUE *lval2);
 
 /**
  * subtract the primary register from the secondary

@@ -337,9 +337,7 @@ void callstk() {
  * jump to specified internal label number
  * @param label the label
  */
-void gen_jump(label)
-int     label;
-{
+void gen_jump(int label) {
     output_with_tab ("jmp \t");
     print_label (label);
     newline ();
@@ -350,10 +348,7 @@ int     label;
  * @param label the label
  * @param ft if true jnz is generated, jz otherwise
  */
-void gen_test_jump(label, ft)
-int     label,
-        ft;
-{
+void gen_test_jump(int label, int ft) {
     output_line ("mov \ta,h");
     output_line ("ora \tl");
     if (ft)
@@ -462,7 +457,7 @@ void gen_jump_case() {
  * @param lval
  * @param lval2
  */
-void gen_add(lval,lval2) int *lval,*lval2; {
+void gen_add(LVALUE *lval, LVALUE *lval2) {
     gen_pop ();
     if (dbltest (lval2, lval)) {
         gen_swap ();
@@ -759,15 +754,13 @@ char *inclib() {
  * Squirrel away argument count in a register that modstk doesn't touch.
  * @param d
  */
-void gnargs(d)
-int     d; {
+void gnargs(int d) {
     output_with_tab ("mvi \ta,");
     output_number(d);
     newline ();
 }
 
-int assemble(s)
-char    *s; {
+int assemble(char *s) {
 #ifdef  ASNM
         char buf[100];
         strcpy(buf, ASNM);

@@ -90,6 +90,9 @@ int match (char *lit);
  */
 int amatch(char *lit, int len) ;
 
+/**
+ * reads whitespace characters from input
+ */
 void blanks();
 
 /**

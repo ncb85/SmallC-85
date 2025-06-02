@@ -33,7 +33,7 @@ void oputs(char *str)
     fputs(str, stderr);
 }
 
-void main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     char *param = NULL, *bp;
     int smacptr, i;
     macptr = 0;

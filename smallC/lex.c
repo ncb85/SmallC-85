@@ -184,6 +184,9 @@ int amatch(char *lit, int len) {
     return (0);
 }
 
+/**
+ * reads whitespace characters from input
+ */
 void blanks() {
     FOREVER {
         while (ch () == 0) {

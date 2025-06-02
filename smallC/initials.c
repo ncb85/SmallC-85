@@ -45,7 +45,7 @@ int find_symbol_initials(char *symbol_name) {
             error("initials table overrun");
         }
 
-        if(astreq(symbol_name, &initials_table[initials_idx].name, NAMEMAX))
+        if(astreq(symbol_name, initials_table[initials_idx].name, NAMEMAX))
         {
             result = 1;
             break;
