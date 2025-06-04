@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     aflag = 1;
     uflag = 0;
 
-    setbuf(stdout, NULL); /* disable stdout buffering */ /* why exactly? */
+    setbuf(stdout, NULL); /* disable stdout buffering (to be able to see last error msg in case of a crash) */
 
     for (i=1; i<argc; i++) {
         param = argv[i];
@@ -139,7 +139,9 @@ int main(int argc, char *argv[]) {
  * @return
  */
 void compile(char *file) {
-    strcpy(finame[0],file); /* copy actual filename to filename array */
+    if (file != NULL) {
+        strcpy(finame[0],file); /* copy actual filename to filename array */
+    }
     srcln[0]=0; /* reset source line counter*/
     if (file == NULL || filename_typeof(file) == 'c') {
         global_table_index = 0;
