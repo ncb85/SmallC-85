@@ -50,12 +50,7 @@ struct tag_symbol {
     int number_of_members;  /* number of tag members */
 };
 #define TAG_SYMBOL struct tag_symbol
-
-#ifdef SMALL_C
 #define NULL_TAG 0
-#else
-#define NULL_TAG 0
-#endif
 
 /* Define the structure member table parameters */
 #define NUMMEMB     30

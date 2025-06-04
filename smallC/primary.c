@@ -318,9 +318,7 @@ int spechar() {
  * @param ptr name of the function
  */
 void callfunction (char *ptr) {
-    int     nargs;
-
-    nargs = 0;
+    int nargs = 0;
     blanks ();
     if (ptr == 0)
         gen_push (HL_REG);

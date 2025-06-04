@@ -742,7 +742,7 @@ int hier11(LVALUE *lval) {
                     k = rvalue(lval, k);
                     callfunction(0);
                 } else {
-                    callfunction(ptr);
+                    callfunction(ptr->name);
                 }
                 lval->symbol = 0;
                 k = 0;
@@ -797,7 +797,7 @@ int hier11(LVALUE *lval) {
         return k;
     if (ptr->identity == FUNCTION) {
         gen_immediate();
-        output_string(ptr);
+        output_string(ptr->name);
         newline();
         return 0;
     }
