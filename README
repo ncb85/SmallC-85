@@ -1,3 +1,9 @@
+Yet another refresh after more than another 10 years passed. Meanwhile new C 
+code standards were introduced and SmallC stopped compiling silently. So my 
+focus now was to silence these new warnings.
+As always SmallC is work in progress. Enjoy.
+
+-------------------------- previous posting -------------------------------
 Revived version of SmallC based on Chris Lewis' port to UNIX V. I have
 mainly rewritten code to use structures and to make it compile using GCC
 silently without warnigns.
