@@ -382,7 +382,7 @@ void dumpglbs() {
                             /* dump data */
                             value = get_item_at(symbol->name, i,
                                 &tag_table[symbol->tagidx]);
-                            if ((symbol->type & CCHAR) && (isblank(value) || isalnum(value))) {
+                            if ((symbol->type & CCHAR) && isprint(value)) {
                                 output_byte('\'');
                                 output_byte(value);
                             } else {
