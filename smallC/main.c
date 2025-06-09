@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+
 #include "defs.h"
 #include "data.h"
 
@@ -301,7 +303,7 @@ int do_declarations(int stclass, TAG_SYMBOL *mtag, int is_struct) {
  * dump the literal pool
  */
 void dumplits() {
-    int j, k;
+    int j, k, l;
 
     if (litptr == 0)
         return;
@@ -309,10 +311,25 @@ void dumplits() {
     output_label_terminator();
     k = 0;
     while (k < litptr) {
-        gen_def_byte();
-        j = 8;
+        //gen_def_byte();
+        j = 8; // 8 .db definition per line
         while (j--) {
-            output_number(litq[k++] & 127);
+            l = strlen(litq + k);
+            if (l > 1) {
+                gen_def_string(); // .strz
+                output_byte('"');
+                output_string(litq + k);
+                output_byte('"');
+                newline();
+                k += l + 1;// +1 for trailing zero
+                break;
+            } else {
+                if (j == 7) {
+                    gen_def_byte(); // .db
+                }
+                output_byte('\'');
+                output_byte(litq[k++] & 127);
+            }
             if ((j == 0) | (k >= litptr)) {
                 newline();
                 break;
@@ -365,7 +382,12 @@ void dumpglbs() {
                             /* dump data */
                             value = get_item_at(symbol->name, i,
                                 &tag_table[symbol->tagidx]);
-                            output_number(value);
+                            if ((symbol->type & CCHAR) && (isblank(value) || isalnum(value))) {
+                                output_byte('\'');
+                                output_byte(value);
+                            } else {
+                                output_number(value);
+                            }
                         } else {
                             /* dump zero, no more data available */
                             output_number(0);

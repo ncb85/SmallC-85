@@ -170,6 +170,11 @@ void gen_def_storage();
 void gen_def_word();
 
 /**
+ * print pseudo-op to define a null terminated string
+ */
+void gen_def_string();
+
+/**
  * modify the stack pointer to the new value indicated
  * @param newstkp new value
  */

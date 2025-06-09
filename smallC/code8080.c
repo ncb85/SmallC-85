@@ -381,6 +381,13 @@ void gen_def_word() {
 }
 
 /**
+ * print pseudo-op to define a null terminated string
+ */
+void gen_def_string() {
+    output_with_tab (".strz\t");
+}
+
+/**
  * modify the stack pointer to the new value indicated
  * @param newstkp new value
  */
