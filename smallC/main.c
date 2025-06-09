@@ -303,7 +303,7 @@ int do_declarations(int stclass, TAG_SYMBOL *mtag, int is_struct) {
  * dump the literal pool
  */
 void dumplits() {
-    int j, k, l;
+    int j, k, l, string_opened;
 
     if (litptr == 0)
         return;
@@ -311,32 +311,62 @@ void dumplits() {
     output_label_terminator();
     k = 0;
     while (k < litptr) {
-        //gen_def_byte();
         j = 8; // 8 .db definition per line
         while (j--) {
             l = strlen(litq + k);
             if (l > 1) {
-                gen_def_string(); // .strz
-                output_byte('"');
-                output_string(litq + k);
-                output_byte('"');
+                j = 8;
                 newline();
-                k += l + 1;// +1 for trailing zero
+                gen_def_string(); // .strz
+                // output string, break it on non printable characters (\t,\n..)
+                string_opened = 0;
+                while(litq[k]) {
+                    // only printable chars, escape double quotes
+                    if (isprint(litq[k]) && litq[k] != '"') {
+                        if (string_opened == 0) {
+                            string_opened = 1;
+                            output_byte('"'); // open string
+                        }
+                        output_byte(litq[k] & 127);
+                    } else {
+                        // close string
+                        if (string_opened == 1) {
+                            string_opened = 0;
+                            output_byte('"');
+                        }
+                        // output char value in parentheses
+                        output_byte('(');
+                        output_number(litq[k] & 127);
+                        output_byte(')');
+                    }
+                    k++;
+                }
+                if (string_opened == 1) {
+                    output_byte('"');
+                }
+                k += 1;// +1 for trailing zero
                 break;
             } else {
                 if (j == 7) {
+                    newline();
                     gen_def_byte(); // .db
                 }
-                output_byte('\'');
-                output_byte(litq[k++] & 127);
+                if (j < 7) {
+                    output_byte(',');
+                }
+                if (isprint(litq[k])) {
+                    output_byte('\'');
+                    output_byte(litq[k++] & 127);
+                } else {
+                    output_number(litq[k++] & 127);
+                }
             }
-            if ((j == 0) | (k >= litptr)) {
-                newline();
+            if ((j == 0) || (k >= litptr)) {
                 break;
             }
-            output_byte(',');
         }
     }
+    newline();
 }
 
 /**
