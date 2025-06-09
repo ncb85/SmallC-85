@@ -1,6 +1,9 @@
 Yet another refresh after more than another 10 years passed. Meanwhile new C 
 code standards were introduced and SmallC stopped compiling silently. So my 
 focus now was to silence these new warnings.
+Little impovement - strings are declared in a readable form in ASM now.
+Target assembler is ASXXXX v 5.50. Example project utest_cpm shows how to link 
+CP/M program with ASLINK 5.50.
 As always SmallC is work in progress. Enjoy.
 
 -------------------------- previous posting -------------------------------
