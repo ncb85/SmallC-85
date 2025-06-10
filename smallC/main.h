@@ -48,6 +48,14 @@ void dumplits();
 void dumpglbs();
 
 /**
+ * dump one string, e.g. Hello World\n
+ * .strz "Hello World"(10)
+ * param k - index of the string in literal pool
+ * returns position of the next literal
+ */
+int dump_string(int k);
+
+/**
  * dump struct data
  * @param symbol struct variable
  * @param position position of the struct in the array, or zero

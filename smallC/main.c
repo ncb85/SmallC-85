@@ -311,47 +311,17 @@ void dumplits() {
     output_label_terminator();
     k = 0;
     while (k < litptr) {
-        j = 8; // 8 .db definition per line
+        j = 8; // 8 .db definitions per line
         while (j--) {
             l = strlen(litq + k);
-            if (l > 1) {
-                j = 8;
-                newline();
-                gen_def_string(); // .strz
-                // output string, break it on non printable characters (\t,\n..)
-                string_opened = 0;
-                while(litq[k]) {
-                    // only printable chars, escape double quotes
-                    if (isprint(litq[k]) && litq[k] != '"') {
-                        if (string_opened == 0) {
-                            string_opened = 1;
-                            output_byte('"'); // open string
-                        }
-                        output_byte(litq[k] & 127);
-                    } else {
-                        // close string
-                        if (string_opened == 1) {
-                            string_opened = 0;
-                            output_byte('"');
-                        }
-                        // output char value in parentheses
-                        output_byte('(');
-                        output_number(litq[k] & 127);
-                        output_byte(')');
-                    }
-                    k++;
-                }
-                if (string_opened == 1) {
-                    output_byte('"');
-                }
-                k += 1;// +1 for trailing zero
-                break;
-            } else {
+            if (l > 1) { // generate: .strz "a string in double quotes"
+                k = dump_string(k);
+                break; // one .strz definition per line
+            } else { // one char, generate: .db 'X or .db #69
                 if (j == 7) {
                     newline();
                     gen_def_byte(); // .db
-                }
-                if (j < 7) {
+                } else {
                     output_byte(',');
                 }
                 if (isprint(litq[k])) {
@@ -367,6 +337,44 @@ void dumplits() {
         }
     }
     newline();
+}
+
+/**
+ * dump one string, e.g. Hello World\n
+ * .strz "Hello World"(10)
+ * param k - index of the string in literal pool
+ * returns position of the next literal
+ */
+int dump_string(int k) {
+    newline();
+    gen_def_string(); // .strz
+    // output string, break it on non printable characters (\t,\n,",..)
+    int string_opened = 0;
+    while(litq[k]) {
+        // only printable chars, and no double quotes allowed
+        if (isprint(litq[k]) && litq[k] != '"') {
+            if (string_opened == 0) {
+                string_opened = 1;
+                output_byte('"'); // open string
+            }
+            output_byte(litq[k] & 127);
+        } else {
+            if (string_opened == 1) {
+                string_opened = 0;
+                output_byte('"'); // close string
+            }
+            // output char value in parentheses
+            output_byte('(');
+            output_number(litq[k] & 127);
+            output_byte(')');
+        }
+        k++;
+    }
+    if (string_opened == 1) {
+        output_byte('"');
+    }
+    k += 1;// +1 for trailing zero
+    return k;
 }
 
 /**
