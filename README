@@ -1,3 +1,7 @@
+2025 revised version is now available on branch refresh
+
+-------------------------- original posting ------------------------------
+
 Revived version of SmallC based on Chris Lewis' port to UNIX V. I have
 mainly rewritten code to use structures and to make it compile using GCC
 silently without warnigns.
