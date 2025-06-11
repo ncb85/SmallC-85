@@ -365,7 +365,7 @@ int dump_string(int k) {
             }
             // output char value in parentheses
             output_byte('(');
-            output_number(litq[k] & 127);
+            output_decimal(litq[k] & 127);
             output_byte(')');
         }
         k++;
